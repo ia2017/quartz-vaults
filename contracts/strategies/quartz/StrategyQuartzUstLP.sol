@@ -144,11 +144,11 @@ contract StrategyQuartzUstLP is StratManager, FeeManager {
         }
     }
 
-    function harvest() external virtual  {
+    function harvest() external virtual {
         _harvest(tx.origin);
     }
 
-    function harvest(address callFeeRecipient) external virtual  {
+    function harvest(address callFeeRecipient) external virtual {
         _harvest(callFeeRecipient);
     }
 
@@ -296,7 +296,6 @@ contract StrategyQuartzUstLP is StratManager, FeeManager {
             setWithdrawalFee(10);
         }
     }
-
 
     // called as part of strat migration. Sends all the available funds back to the vault.
     function retireStrat() external {

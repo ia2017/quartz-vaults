@@ -1,4 +1,5 @@
 import { ethers } from "hardhat";
+import { STRAT_QUARTZ_UST } from "./data";
 
 async function main() {
   const QuartzVault = await ethers.getContractFactory("QuartzVault");
@@ -8,10 +9,10 @@ async function main() {
   // uint256 _approvalDelay
   const PREFIX = "qd";
   const vault = await QuartzVault.deploy(
-    ethers.constants.AddressZero,
+    STRAT_QUARTZ_UST,
     `QUARTZ-VAULT-LP`,
     `${PREFIX}QuartzUST`,
-    0
+    10
   );
 
   await vault.deployed();

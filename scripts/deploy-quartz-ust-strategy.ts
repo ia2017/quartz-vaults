@@ -33,20 +33,20 @@ const PROTOCOL_FEE_RECEPIENT = "0xEE07b8Ee4D827F7EDAC3FFA7bf1a84B8c816623A";
 // QShare -> WONE/ONE
 const _outputToNativeRoute: string[] = [QSHARE_ADDRESS, HARMONY_wONE_ADDRESS];
 
-// QShare -> WONE -> Jewel -> UST -> Quartz
+// QShare -> WONE/ONE -> UST
 const _outputToLp0Route: string[] = [
+  QSHARE_ADDRESS,
+  HARMONY_wONE_ADDRESS,
+  UST_ADDRESS,
+];
+
+// QShare -> WONE -> Jewel -> UST -> Quartz
+const _outputToLp1Route: string[] = [
   QSHARE_ADDRESS,
   HARMONY_wONE_ADDRESS,
   JEWEL_ADDRESS,
   UST_ADDRESS,
   QUARTZ_ADDRESS,
-];
-
-// QShare -> WONE/ONE -> UST
-const _outputToLp1Route: string[] = [
-  QSHARE_ADDRESS,
-  HARMONY_wONE_ADDRESS,
-  UST_ADDRESS,
 ];
 
 async function main() {
