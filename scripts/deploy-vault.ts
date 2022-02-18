@@ -1,0 +1,25 @@
+import { ethers } from "hardhat";
+
+async function main() {
+  const QuartzVault = await ethers.getContractFactory("QuartzVault");
+  // IStrategy _strategy,
+  // string memory _name,
+  // string memory _symbol,
+  // uint256 _approvalDelay
+  const PREFIX = "qd";
+  const vault = await QuartzVault.deploy(
+    ethers.constants.AddressZero,
+    `QUARTZ-VAULT-LP`,
+    `${PREFIX}QuartzUST`,
+    0
+  );
+
+  await vault.deployed();
+
+  console.log("QuartzVault deployed to:", vault.address);
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
