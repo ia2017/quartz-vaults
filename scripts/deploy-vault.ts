@@ -11,7 +11,7 @@ async function main() {
   const vault = await QuartzVault.deploy(
     STRAT_QUARTZ_UST,
     `QUARTZ-VAULT-LP`,
-    `${PREFIX}QuartzUST`,
+    `${PREFIX}-Quartz-UST`,
     10
   );
 
