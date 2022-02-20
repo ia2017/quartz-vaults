@@ -37,6 +37,7 @@ const _outputToNativeRoute: string[] = [QSHARE_ADDRESS, HARMONY_wONE_ADDRESS];
 const _outputToLp0Route: string[] = [
   QSHARE_ADDRESS,
   HARMONY_wONE_ADDRESS,
+  JEWEL_ADDRESS,
   UST_ADDRESS,
 ];
 
