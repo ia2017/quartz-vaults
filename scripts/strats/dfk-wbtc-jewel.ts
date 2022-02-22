@@ -7,6 +7,7 @@ import {
   TEST_STRATEGIST_ADDRESS,
 } from "../common-contracts";
 import {
+  ETH_ADDRESS,
   HARMONY_wONE_ADDRESS,
   JEWEL_ADDRESS,
   WBTC_ADDRESS,
@@ -39,8 +40,8 @@ const PROTOCOL_FEE_RECEPIENT = QUARTZ_DAO_ADDRESS_HARMONY;
 const _outputToNativeRoute: string[] = [JEWEL_ADDRESS, HARMONY_wONE_ADDRESS];
 
 // Token0 = WBTC
-// JEWEL -> WBTC
-const _outputToLp0Route: string[] = [JEWEL_ADDRESS, WBTC_ADDRESS];
+// JEWEL -> ETH -> WBTC ??
+const _outputToLp0Route: string[] = [JEWEL_ADDRESS, ETH_ADDRESS, WBTC_ADDRESS];
 
 // Token1 = JEWEL
 // JEWEL
