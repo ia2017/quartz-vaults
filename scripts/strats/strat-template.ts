@@ -1,53 +1,36 @@
 import { ethers } from "hardhat";
-
-import {
-  HARMONY_wONE_ADDRESS,
-  JEWEL_ADDRESS,
-  QSHARE_ADDRESS,
-  QUARTZ_ADDRESS,
-  UST_ADDRESS,
-} from "./tokens";
+import {} from "../tokens";
 
 // Quartz-UST LP address
-const WANT = "0x90a48cb3a724ef6f8e6240f4788559f6370b6925";
+const WANT = "";
 
-const POOL_ID = 0;
+const POOL_ID = -1;
 
 // Reward Pool
-const CHEF_ADDRESS = "0x1da194F8baf85175519D92322a06b46A2638A530";
+const CHEF_ADDRESS = "";
 
 const VAULT_ADDRESS = "";
 
 // DFK Harmony Router
-const ROUTER_ADDRESS = "0x24ad62502d1c652cc7684081169d04896ac20f30";
+const ROUTER_ADDRESS = "";
 
 // Placeholder address, Keeper is an extra additional account to give access to the strategy as needed
-const KEEPER_ADDRESS = "0x570108E54d11348BD3734FF73dc55eC52c28d3EF";
+const KEEPER_ADDRESS = "";
 
 // Dev account address
-const STRATEGIST_ADDRESS = "0x570108E54d11348BD3734FF73dc55eC52c28d3EF";
+const STRATEGIST_ADDRESS = "";
 
 // Quartz DAO Fund
-const PROTOCOL_FEE_RECEPIENT = "0xEE07b8Ee4D827F7EDAC3FFA7bf1a84B8c816623A";
+const PROTOCOL_FEE_RECEPIENT = "";
 
-// QShare -> WONE/ONE
-const _outputToNativeRoute: string[] = [QSHARE_ADDRESS, HARMONY_wONE_ADDRESS];
+//
+const _outputToNativeRoute: string[] = [];
 
-// QShare -> WONE/ONE -> UST
-const _outputToLp0Route: string[] = [
-  QSHARE_ADDRESS,
-  HARMONY_wONE_ADDRESS,
-  JEWEL_ADDRESS,
-  UST_ADDRESS,
-];
+//
+const _outputToLp0Route: string[] = [];
 
 // QShare -> WONE -> UST -> Quartz
-const _outputToLp1Route: string[] = [
-  QSHARE_ADDRESS,
-  HARMONY_wONE_ADDRESS,
-  UST_ADDRESS,
-  QUARTZ_ADDRESS,
-];
+const _outputToLp1Route: string[] = [];
 
 async function main() {
   if (!VAULT_ADDRESS) {

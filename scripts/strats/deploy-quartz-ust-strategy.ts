@@ -1,22 +1,22 @@
 import { ethers } from "hardhat";
-import { VAULT_QSHARE_ONE_ADDRESS } from "./data";
+
 import {
   HARMONY_wONE_ADDRESS,
   JEWEL_ADDRESS,
   QSHARE_ADDRESS,
   QUARTZ_ADDRESS,
   UST_ADDRESS,
-} from "./tokens";
+} from "../tokens";
 
-// QShare-ONE LP address
-const WANT = "0x157e2E205b8d307501F1AAd1C5C96c562e6f07c5";
+// Quartz-UST LP address
+const WANT = "0x90a48cb3a724ef6f8e6240f4788559f6370b6925";
 
-const POOL_ID = 1;
+const POOL_ID = 0;
 
 // Reward Pool
 const CHEF_ADDRESS = "0x1da194F8baf85175519D92322a06b46A2638A530";
 
-const VAULT_ADDRESS = VAULT_QSHARE_ONE_ADDRESS;
+const VAULT_ADDRESS = "";
 
 // DFK Harmony Router
 const ROUTER_ADDRESS = "0x24ad62502d1c652cc7684081169d04896ac20f30";
@@ -33,13 +33,27 @@ const PROTOCOL_FEE_RECEPIENT = "0xEE07b8Ee4D827F7EDAC3FFA7bf1a84B8c816623A";
 // QShare -> WONE/ONE
 const _outputToNativeRoute: string[] = [QSHARE_ADDRESS, HARMONY_wONE_ADDRESS];
 
-// QShare -> WONE/ONE
-const _outputToLp0Route: string[] = [QSHARE_ADDRESS, HARMONY_wONE_ADDRESS];
+// QShare -> WONE/ONE -> UST
+const _outputToLp0Route: string[] = [
+  QSHARE_ADDRESS,
+  HARMONY_wONE_ADDRESS,
+  JEWEL_ADDRESS,
+  UST_ADDRESS,
+];
 
-// QShare
-const _outputToLp1Route: string[] = [QUARTZ_ADDRESS];
+// QShare -> WONE -> UST -> Quartz
+const _outputToLp1Route: string[] = [
+  QSHARE_ADDRESS,
+  HARMONY_wONE_ADDRESS,
+  UST_ADDRESS,
+  QUARTZ_ADDRESS,
+];
 
 async function main() {
+  if (!VAULT_ADDRESS) {
+    throw new Error("ADD ADDRESS");
+  }
+
   const StrategyQuartzLP = await ethers.getContractFactory("StrategyQuartzLP");
   //   address _want,
   //   uint256 _poolId,
@@ -56,7 +70,7 @@ async function main() {
     WANT,
     POOL_ID,
     CHEF_ADDRESS,
-    VAULT_ADDRESS,
+    ethers.constants.AddressZero,
     ROUTER_ADDRESS,
     KEEPER_ADDRESS,
     STRATEGIST_ADDRESS,
