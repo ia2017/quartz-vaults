@@ -13,7 +13,7 @@ import "../common/StratManager.sol";
 import "../common/FeeManager.sol";
 import "../../utils/StringUtils.sol";
 
-contract StrategyQuartzUstLP is StratManager, FeeManager {
+contract StrategyQuartzLP is StratManager, FeeManager {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
 
