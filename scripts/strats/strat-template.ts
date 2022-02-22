@@ -1,5 +1,5 @@
 import { ethers } from "hardhat";
-import {} from "../tokens";
+import {} from "../harmony-tokens";
 
 // Quartz-UST LP address
 const WANT = "";
@@ -9,7 +9,8 @@ const POOL_ID = -1;
 // Reward Pool
 const CHEF_ADDRESS = "";
 
-const VAULT_ADDRESS = "";
+// Deploy strategy and then updating its vault with setVault() seems to be easiest for now
+const VAULT_ADDRESS = ethers.constants.AddressZero;
 
 // DFK Harmony Router
 const ROUTER_ADDRESS = "";
@@ -29,14 +30,10 @@ const _outputToNativeRoute: string[] = [];
 //
 const _outputToLp0Route: string[] = [];
 
-// QShare -> WONE -> UST -> Quartz
+//
 const _outputToLp1Route: string[] = [];
 
 async function main() {
-  if (!VAULT_ADDRESS) {
-    throw new Error("ADD ADDRESS");
-  }
-
   const StrategyQuartzLP = await ethers.getContractFactory("StrategyQuartzLP");
   //   address _want,
   //   uint256 _poolId,
@@ -53,7 +50,7 @@ async function main() {
     WANT,
     POOL_ID,
     CHEF_ADDRESS,
-    ethers.constants.AddressZero,
+    VAULT_ADDRESS,
     ROUTER_ADDRESS,
     KEEPER_ADDRESS,
     STRATEGIST_ADDRESS,

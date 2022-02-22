@@ -1,59 +1,52 @@
 import { ethers } from "hardhat";
-
+import {
+  DFK_ROUTER_ADDRESS_HARMONY,
+  QUARTZ_DAO_ADDRESS_HARMONY,
+  QUARTZ_REWARD_POOL_ADDRESS_HARMONY,
+  TEST_KEEPER_ADDRESS,
+  TEST_STRATEGIST_ADDRESS,
+} from "../common-contracts";
 import {
   HARMONY_wONE_ADDRESS,
   JEWEL_ADDRESS,
-  QSHARE_ADDRESS,
-  QUARTZ_ADDRESS,
-  UST_ADDRESS,
+  WBTC_ADDRESS,
 } from "../harmony-tokens";
 
 // Quartz-UST LP address
-const WANT = "0x90a48cb3a724ef6f8e6240f4788559f6370b6925";
+const WANT = "0x0AcCE15D05B4BA4dBEdFD7AFD51EA4FA1592f75E";
 
-const POOL_ID = 0;
+const POOL_ID = 7;
 
 // Reward Pool
-const CHEF_ADDRESS = "0x1da194F8baf85175519D92322a06b46A2638A530";
+const CHEF_ADDRESS = QUARTZ_REWARD_POOL_ADDRESS_HARMONY;
 
-const VAULT_ADDRESS = "";
+// Deploy strategy and then updating its vault with setVault() seems to be easiest for now
+const VAULT_ADDRESS = ethers.constants.AddressZero;
 
 // DFK Harmony Router
-const ROUTER_ADDRESS = "0x24ad62502d1c652cc7684081169d04896ac20f30";
+const ROUTER_ADDRESS = DFK_ROUTER_ADDRESS_HARMONY;
 
 // Placeholder address, Keeper is an extra additional account to give access to the strategy as needed
-const KEEPER_ADDRESS = "0x570108E54d11348BD3734FF73dc55eC52c28d3EF";
+const KEEPER_ADDRESS = TEST_KEEPER_ADDRESS;
 
 // Dev account address
-const STRATEGIST_ADDRESS = "0x570108E54d11348BD3734FF73dc55eC52c28d3EF";
+const STRATEGIST_ADDRESS = TEST_STRATEGIST_ADDRESS;
 
 // Quartz DAO Fund
-const PROTOCOL_FEE_RECEPIENT = "0xEE07b8Ee4D827F7EDAC3FFA7bf1a84B8c816623A";
+const PROTOCOL_FEE_RECEPIENT = QUARTZ_DAO_ADDRESS_HARMONY;
 
-// QShare -> WONE/ONE
-const _outputToNativeRoute: string[] = [QSHARE_ADDRESS, HARMONY_wONE_ADDRESS];
+// JEWEL -> ONE
+const _outputToNativeRoute: string[] = [JEWEL_ADDRESS, HARMONY_wONE_ADDRESS];
 
-// QShare -> WONE/ONE -> UST
-const _outputToLp0Route: string[] = [
-  QSHARE_ADDRESS,
-  HARMONY_wONE_ADDRESS,
-  JEWEL_ADDRESS,
-  UST_ADDRESS,
-];
+// Token0 = WBTC
+// JEWEL -> WBTC
+const _outputToLp0Route: string[] = [JEWEL_ADDRESS, WBTC_ADDRESS];
 
-// QShare -> WONE -> UST -> Quartz
-const _outputToLp1Route: string[] = [
-  QSHARE_ADDRESS,
-  HARMONY_wONE_ADDRESS,
-  UST_ADDRESS,
-  QUARTZ_ADDRESS,
-];
+// Token1 = JEWEL
+// JEWEL
+const _outputToLp1Route: string[] = [JEWEL_ADDRESS];
 
 async function main() {
-  if (!VAULT_ADDRESS) {
-    throw new Error("ADD ADDRESS");
-  }
-
   const StrategyQuartzLP = await ethers.getContractFactory("StrategyQuartzLP");
   //   address _want,
   //   uint256 _poolId,
@@ -70,7 +63,7 @@ async function main() {
     WANT,
     POOL_ID,
     CHEF_ADDRESS,
-    ethers.constants.AddressZero,
+    VAULT_ADDRESS,
     ROUTER_ADDRESS,
     KEEPER_ADDRESS,
     STRATEGIST_ADDRESS,

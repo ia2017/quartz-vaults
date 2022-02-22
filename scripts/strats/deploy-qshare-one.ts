@@ -6,7 +6,7 @@ import {
   QSHARE_ADDRESS,
   QUARTZ_ADDRESS,
   UST_ADDRESS,
-} from "../tokens";
+} from "../harmony-tokens";
 
 // QShare-ONE LP address
 const WANT = "0x157e2E205b8d307501F1AAd1C5C96c562e6f07c5";
