@@ -144,13 +144,13 @@ contract StrategyQuartzLP is StratManager, FeeManager {
         }
     }
 
-    function harvest() external virtual {
-        _harvest(tx.origin);
-    }
+    // function harvest() external virtual {
+    //     _harvest(tx.origin);
+    // }
 
-    function harvest(address callFeeRecipient) external virtual {
-        _harvest(callFeeRecipient);
-    }
+    // function harvest(address callFeeRecipient) external virtual {
+    //     _harvest(callFeeRecipient);
+    // }
 
     function managerHarvest() external onlyManager {
         _harvest(tx.origin);
@@ -325,6 +325,16 @@ contract StrategyQuartzLP is StratManager, FeeManager {
         _giveAllowances();
 
         deposit();
+    }
+
+    /// @dev Allow updating to a more optimal routing path if needed
+    function setOutputToLp0(address[] memory path) external onlyManager  {
+        outputToLp0Route = path;
+    }
+
+     /// @dev Allow updating to a more optimal routing path if needed
+    function setOutputToLp1(address[] memory path) external onlyManager  {
+        outputToLp1Route = path;
     }
 
     function _giveAllowances() internal {

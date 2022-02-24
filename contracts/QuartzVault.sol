@@ -100,19 +100,30 @@ contract QuartzVault is ERC20, Ownable, ReentrancyGuard {
      * into the vault. The vault is then in charge of sending funds into the strategy.
      */
     function deposit(uint256 _amount) public nonReentrant {
+        // Allow an setup steps implemented in strategy to run
         strategy.beforeDeposit();
 
+        // Get current total holdings amount (vault and strat)
         uint256 _pool = balance();
+
+        // Pull callers tokens to vault
         want().safeTransferFrom(msg.sender, address(this), _amount);
+
+        // Transfer current available `want` amount to strategy and call its `deposit` function after.
         earn();
+
+        // Run checks after transfer into the strategy to determine vault token mint amount
         uint256 _after = balance();
-        _amount = _after.sub(_pool); // Additional check for deflationary tokens
+        // Additional check for deflationary tokens
+        _amount = _after.sub(_pool);
+
         uint256 shares = 0;
         if (totalSupply() == 0) {
             shares = _amount;
         } else {
             shares = (_amount.mul(totalSupply())).div(_pool);
         }
+
         _mint(msg.sender, shares);
     }
 

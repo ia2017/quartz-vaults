@@ -13,7 +13,7 @@ import {
   WBTC_ADDRESS,
 } from "../harmony-tokens";
 
-// Quartz-UST LP address
+// Pair/LP address
 const WANT = "0x0AcCE15D05B4BA4dBEdFD7AFD51EA4FA1592f75E";
 
 const POOL_ID = 7;
@@ -40,7 +40,7 @@ const PROTOCOL_FEE_RECEPIENT = QUARTZ_DAO_ADDRESS_HARMONY;
 const _outputToNativeRoute: string[] = [JEWEL_ADDRESS, HARMONY_wONE_ADDRESS];
 
 // Token0 = WBTC
-// JEWEL -> ETH -> WBTC ??
+// JEWEL -> ETH -> WBTC ?? Better liquidity in ETH/BTC pool than just JEWEL/BTC
 const _outputToLp0Route: string[] = [JEWEL_ADDRESS, ETH_ADDRESS, WBTC_ADDRESS];
 
 // Token1 = JEWEL

@@ -1,9 +1,10 @@
 import { ethers } from "hardhat";
+import { PANCAKESWAP_ROUTER_ADDRESS } from "./bsc-data";
 
 // Pair/LP address
 const WANT = "";
 
-const POOL_ID = -1;
+const POOL_ID = 0;
 
 // Reward Pool
 const CHEF_ADDRESS = "";
@@ -11,7 +12,7 @@ const CHEF_ADDRESS = "";
 // Deploy strategy and then updating its vault with setVault() seems to be easiest for now
 const VAULT_ADDRESS = ethers.constants.AddressZero;
 
-const ROUTER_ADDRESS = "";
+const ROUTER_ADDRESS = PANCAKESWAP_ROUTER_ADDRESS;
 
 // Placeholder address, Keeper is an extra additional account to give access to the strategy as needed
 const KEEPER_ADDRESS = "";

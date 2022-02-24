@@ -1,4 +1,5 @@
 import { ethers } from "hardhat";
+import { STRAT_DFK_JEWEL_BTC_ADDRESS } from "./data";
 
 async function main() {
   const QuartzVault = await ethers.getContractFactory("QuartzVault");
@@ -7,8 +8,8 @@ async function main() {
   // string memory _symbol,
   // uint256 _approvalDelay
   const vault = await QuartzVault.deploy(
-    "0x72bd47e1AF4b97D25076E36d2c177aa9c45033e2",
-    `Qyartz.Defi-QuartzUstVaultLP`,
+    STRAT_DFK_JEWEL_BTC_ADDRESS,
+    `Qyartz.Defi-Jewel-WBTC-VaultLP`,
     `QuartzUstVaultLP`,
     10
   );
