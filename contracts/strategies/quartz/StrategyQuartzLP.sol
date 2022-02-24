@@ -158,24 +158,35 @@ contract StrategyQuartzLP is StratManager, FeeManager {
 
     // compounds earnings and charges performance fee
     function _harvest(address callFeeRecipient) internal whenNotPaused {
+        // Harvest to setup compounding flow (charge fees -> compound rewards)
         IMasterChef(chef).deposit(poolId, 0);
         uint256 outputBal = IERC20(output).balanceOf(address(this));
+
         if (outputBal > 0) {
+            // Charge fees on harvested rewards before compounding
             chargeFees(callFeeRecipient);
+
             addLiquidity();
+
             uint256 wantHarvested = balanceOfWant();
+
             deposit();
 
             lastHarvest = block.timestamp;
+
             emit StratHarvest(msg.sender, wantHarvested, balanceOf());
         }
     }
 
-    // performance fees
+    /// @dev Used to charge fees on harvested rewards before executing the compounding process.
     function chargeFees(address callFeeRecipient) internal {
-        uint256 toNative = IERC20(output).balanceOf(address(this)).mul(45).div(
+        // Hard coded 4.5% by Beefy updated to 2.75%. 
+        // Take % of rewards and distribute amongst fee recipients
+        uint256 toNative = IERC20(output).balanceOf(address(this)).mul((275.div(100))).div(
             1000
         );
+
+        // Convert whatever the reward token is into the current chains native token
         IUniswapRouterETH(unirouter).swapExactTokensForTokens(
             toNative,
             0,
