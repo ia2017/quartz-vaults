@@ -1,4 +1,4 @@
-export const OneQSHARE_UST_PAIR_ADDRESS = "";
+export const PAIR_OneQSHARE_UST_ADDRESS = "";
 
 // Pairs
 export const PAIR_AMETHYST_UST_ADDRESS =

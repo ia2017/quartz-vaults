@@ -180,13 +180,14 @@ contract StrategyQuartzLP is StratManager, FeeManager {
 
     /// @dev Used to charge fees on harvested rewards before executing the compounding process.
     function chargeFees(address callFeeRecipient) internal {
-        // Hard coded 4.5% by Beefy updated to 2.75%. 
+        // Hard coded 4.5% by Beefy updated to 2.75%.
         // Take % of rewards and distribute amongst fee recipients
         //  uint256 toNative = IERC20(output).balanceOf(address(this)).mul(45).div(
         //     1000
         // );
-        uint256 toNative = IERC20(output).balanceOf(address(this)).mul((275.div(100))).div(
-            1000
+        uint256 percentageFee = uint256(275).div(10000);
+        uint256 toNative = IERC20(output).balanceOf(address(this)).mul(
+            percentageFee
         );
 
         // Convert whatever the reward token is into the current chains native token
@@ -342,12 +343,12 @@ contract StrategyQuartzLP is StratManager, FeeManager {
     }
 
     /// @dev Allow updating to a more optimal routing path if needed
-    function setOutputToLp0(address[] memory path) external onlyManager  {
+    function setOutputToLp0(address[] memory path) external onlyManager {
         outputToLp0Route = path;
     }
 
-     /// @dev Allow updating to a more optimal routing path if needed
-    function setOutputToLp1(address[] memory path) external onlyManager  {
+    /// @dev Allow updating to a more optimal routing path if needed
+    function setOutputToLp1(address[] memory path) external onlyManager {
         outputToLp1Route = path;
     }
 
