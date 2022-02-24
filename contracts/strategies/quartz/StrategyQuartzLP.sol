@@ -182,6 +182,9 @@ contract StrategyQuartzLP is StratManager, FeeManager {
     function chargeFees(address callFeeRecipient) internal {
         // Hard coded 4.5% by Beefy updated to 2.75%. 
         // Take % of rewards and distribute amongst fee recipients
+        //  uint256 toNative = IERC20(output).balanceOf(address(this)).mul(45).div(
+        //     1000
+        // );
         uint256 toNative = IERC20(output).balanceOf(address(this)).mul((275.div(100))).div(
             1000
         );
