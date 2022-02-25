@@ -1,5 +1,8 @@
 import { ethers } from "hardhat";
-import { STRAT_1QSHARE_UST_ADDRESS_BSC } from "./strats/bsc/bsc-data";
+import {
+  STRAT_1QSHARE_UST_ADDRESS_BSC,
+  STRAT_AMETHYST_UST_ADDRESS_BSC,
+} from "./strats/bsc/bsc-data";
 
 async function main() {
   const QuartzVault = await ethers.getContractFactory("QuartzVault");
@@ -8,9 +11,9 @@ async function main() {
   // string memory _symbol,
   // uint256 _approvalDelay
   const vault = await QuartzVault.deploy(
-    STRAT_1QSHARE_UST_ADDRESS_BSC,
-    "Quartz 1QSHARE-UST Vault LP",
-    `Quartz-1QSHARE-UST-VaultLP`,
+    STRAT_AMETHYST_UST_ADDRESS_BSC,
+    "Quartz AMES-UST Vault LP",
+    `Quartz-AMES-UST-VaultLP`,
     10
   );
 
