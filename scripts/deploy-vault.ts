@@ -2,6 +2,7 @@ import { ethers } from "hardhat";
 import {
   STRAT_1QSHARE_UST_ADDRESS_BSC,
   STRAT_AMETHYST_UST_ADDRESS_BSC,
+  STRAT_ASHARE_UST_ADDRESS_BSC,
 } from "./strats/bsc/bsc-data";
 
 async function main() {
@@ -11,9 +12,9 @@ async function main() {
   // string memory _symbol,
   // uint256 _approvalDelay
   const vault = await QuartzVault.deploy(
-    STRAT_AMETHYST_UST_ADDRESS_BSC,
-    "Quartz AMES-UST Vault LP",
-    `Quartz-AMES-UST-VaultLP`,
+    STRAT_ASHARE_UST_ADDRESS_BSC,
+    "Quartz ASHARE-UST Vault LP",
+    `Quartz-ASHARE-UST-VaultLP`,
     10
   );
 
