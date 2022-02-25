@@ -298,8 +298,10 @@ contract StrategyQuartzLP is StratManager, FeeManager {
                 nativeOut = amountOut[amountOut.length - 1];
             } catch {}
         }
-
-        return nativeOut.mul(45).div(1000).mul(callFee).div(MAX_FEE);
+        // Hard coded 4.5% by Beefy updated to 2.75%.
+        // return nativeOut.mul(45).div(1000).mul(callFee).div(MAX_FEE);
+        uint256 percentageFee = uint256(275).div(10000);
+        return percentageFee.mul(callFee).div(MAX_FEE);
     }
 
     function setHarvestOnDeposit(bool _harvestOnDeposit) external onlyManager {
