@@ -1,4 +1,8 @@
 import { ethers } from "hardhat";
+import {
+  DEFAULT_KEEPER_ADDRESS,
+  DEFAULT_STRATEGIST_ADDRESS,
+} from "../data/data";
 
 // Pair/LP address
 const WANT = "";
@@ -14,10 +18,10 @@ const VAULT_ADDRESS = ethers.constants.AddressZero;
 const ROUTER_ADDRESS = "";
 
 // Placeholder address, Keeper is an extra additional account to give access to the strategy as needed
-const KEEPER_ADDRESS = "";
+const KEEPER_ADDRESS = DEFAULT_KEEPER_ADDRESS;
 
 // Dev account address
-const STRATEGIST_ADDRESS = "";
+const STRATEGIST_ADDRESS = DEFAULT_STRATEGIST_ADDRESS;
 
 // Quartz DAO Fund
 const PROTOCOL_FEE_RECEPIENT = "";

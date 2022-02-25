@@ -6,7 +6,7 @@ import {
   QSHARE_ADDRESS,
   QUARTZ_ADDRESS,
   UST_ADDRESS,
-} from "../harmony-tokens";
+} from "../data/harmony-tokens";
 
 // Quartz-UST LP address
 const WANT = "0x90a48cb3a724ef6f8e6240f4788559f6370b6925";

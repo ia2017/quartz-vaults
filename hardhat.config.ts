@@ -25,6 +25,13 @@ const config: HardhatUserConfig = {
           ? [process.env.HARMONY_MAINNET_DEV_KEY]
           : [],
     },
+    bsc_mainnet: {
+      url: process.env.BSC_MAINNET_URL || "",
+      accounts:
+        process.env.BSC_MAINNET_DEV_KEY !== undefined
+          ? [process.env.BSC_MAINNET_DEV_KEY]
+          : [],
+    },
   },
 };
 

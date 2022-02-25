@@ -1,13 +1,23 @@
 import { ethers } from "hardhat";
-import { PANCAKESWAP_ROUTER_ADDRESS } from "./bsc-data";
+import {
+  DEFAULT_KEEPER_ADDRESS,
+  DEFAULT_STRATEGIST_ADDRESS,
+} from "../../data/data";
+import {
+  DAO_FUND_ADDRESS_BSC,
+  PAIR_AMETHYST_UST_ADDRESS,
+  PANCAKESWAP_ROUTER_ADDRESS,
+  REWARD_POOL_ADDRESS_BSC,
+} from "./bsc-data";
+import { TOKENS } from "../../data/tokens";
 
 // Pair/LP address
-const WANT = "";
+const WANT = PAIR_AMETHYST_UST_ADDRESS;
 
 const POOL_ID = 0;
 
 // Reward Pool
-const CHEF_ADDRESS = "";
+const CHEF_ADDRESS = REWARD_POOL_ADDRESS_BSC;
 
 // Deploy strategy and then updating its vault with setVault() seems to be easiest for now
 const VAULT_ADDRESS = ethers.constants.AddressZero;
@@ -15,22 +25,30 @@ const VAULT_ADDRESS = ethers.constants.AddressZero;
 const ROUTER_ADDRESS = PANCAKESWAP_ROUTER_ADDRESS;
 
 // Placeholder address, Keeper is an extra additional account to give access to the strategy as needed
-const KEEPER_ADDRESS = "";
+const KEEPER_ADDRESS = DEFAULT_KEEPER_ADDRESS;
 
 // Dev account address
-const STRATEGIST_ADDRESS = "";
+const STRATEGIST_ADDRESS = DEFAULT_STRATEGIST_ADDRESS;
 
 // Quartz DAO Fund
-const PROTOCOL_FEE_RECEPIENT = "";
+const PROTOCOL_FEE_RECEPIENT = DAO_FUND_ADDRESS_BSC;
 
-//
-const _outputToNativeRoute: string[] = [];
+// Output = ASHARE: ASHARE -> UST -> BNB
+const _outputToNativeRoute: string[] = [
+  TOKENS.ASHARE.BSC,
+  TOKENS.UST.BSC,
+  TOKENS.BNB.BSC,
+];
 
-//
-const _outputToLp0Route: string[] = [];
+// Token0 = UST: ASHARE -> UST
+const _outputToLp0Route: string[] = [TOKENS.ASHARE.BSC, TOKENS.UST.BSC];
 
-//
-const _outputToLp1Route: string[] = [];
+// Token1 = AMES:ASHARE -> UST -> AMES
+const _outputToLp1Route: string[] = [
+  TOKENS.ASHARE.BSC,
+  TOKENS.UST.BSC,
+  TOKENS.AMETHYST.BSC,
+];
 
 async function main() {
   const StrategyQuartzLP = await ethers.getContractFactory("StrategyQuartzLP");
