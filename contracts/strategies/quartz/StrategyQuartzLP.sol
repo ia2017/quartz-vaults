@@ -144,14 +144,6 @@ contract StrategyQuartzLP is StratManager, FeeManager {
         }
     }
 
-    // function harvest() external virtual {
-    //     _harvest(tx.origin);
-    // }
-
-    // function harvest(address callFeeRecipient) external virtual {
-    //     _harvest(callFeeRecipient);
-    // }
-
     function managerHarvest() external onlyManager {
         _harvest(tx.origin);
     }
