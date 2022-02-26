@@ -1,14 +1,12 @@
 import { ethers } from "hardhat";
 import {
-  DEFAULT_KEEPER_ADDRESS,
-  DEFAULT_STRATEGIST_ADDRESS,
-} from "../../data/data";
-import {
   DAO_FUND_ADDRESS_BSC,
+  DEFAULT_KEEPER_ADDRESS_BSC,
+  DEFAULT_STRATEGIST_ADDRESS_BSC,
   PAIR_1QSHARE_UST_BSC,
   PANCAKESWAP_ROUTER_ADDRESS,
   REWARD_POOL_ADDRESS_BSC,
-} from "./bsc-data";
+} from "./bsc-addresses";
 import { TOKENS } from "../../data/tokens";
 
 // Pair/LP address
@@ -25,10 +23,10 @@ const VAULT_ADDRESS = ethers.constants.AddressZero;
 const ROUTER_ADDRESS = PANCAKESWAP_ROUTER_ADDRESS;
 
 // Placeholder address, Keeper is an extra additional account to give access to the strategy as needed
-const KEEPER_ADDRESS = DEFAULT_KEEPER_ADDRESS;
+const KEEPER_ADDRESS = DEFAULT_KEEPER_ADDRESS_BSC;
 
 // Dev account address
-const STRATEGIST_ADDRESS = DEFAULT_STRATEGIST_ADDRESS;
+const STRATEGIST_ADDRESS = DEFAULT_STRATEGIST_ADDRESS_BSC;
 
 // Quartz DAO Fund
 const PROTOCOL_FEE_RECEPIENT = DAO_FUND_ADDRESS_BSC;

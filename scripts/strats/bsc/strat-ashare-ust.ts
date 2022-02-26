@@ -1,15 +1,13 @@
 import { ethers } from "hardhat";
-import {
-  DEFAULT_KEEPER_ADDRESS,
-  DEFAULT_STRATEGIST_ADDRESS,
-} from "../../data/data";
 import { TOKENS } from "../../data/tokens";
 import {
   DAO_FUND_ADDRESS_BSC,
+  DEFAULT_KEEPER_ADDRESS_BSC,
+  DEFAULT_STRATEGIST_ADDRESS_BSC,
   PAIR_ASHARE_UST_ADDRESS,
   PANCAKESWAP_ROUTER_ADDRESS,
   REWARD_POOL_ADDRESS_BSC,
-} from "./bsc-data";
+} from "./bsc-addresses";
 
 // Pair/LP address
 const WANT = PAIR_ASHARE_UST_ADDRESS;
@@ -25,10 +23,10 @@ const VAULT_ADDRESS = ethers.constants.AddressZero;
 const ROUTER_ADDRESS = PANCAKESWAP_ROUTER_ADDRESS;
 
 // Placeholder address, Keeper is an extra additional account to give access to the strategy as needed
-const KEEPER_ADDRESS = DEFAULT_KEEPER_ADDRESS;
+const KEEPER_ADDRESS = DEFAULT_KEEPER_ADDRESS_BSC;
 
 // Dev account address
-const STRATEGIST_ADDRESS = DEFAULT_STRATEGIST_ADDRESS;
+const STRATEGIST_ADDRESS = DEFAULT_STRATEGIST_ADDRESS_BSC;
 
 // Quartz DAO Fund
 const PROTOCOL_FEE_RECEPIENT = DAO_FUND_ADDRESS_BSC;
@@ -40,11 +38,11 @@ const _outputToNativeRoute: string[] = [
   TOKENS.BNB.BSC,
 ];
 
-// UST
+// Token0: UST
 // ASHARE -> UST
 const _outputToLp0Route: string[] = [TOKENS.ASHARE.BSC, TOKENS.UST.BSC];
 
-// ASHARE
+// Token1: ASHARE
 const _outputToLp1Route: string[] = [TOKENS.ASHARE.BSC];
 
 async function main() {

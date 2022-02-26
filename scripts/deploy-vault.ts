@@ -3,7 +3,7 @@ import {
   STRAT_1QSHARE_UST_ADDRESS_BSC,
   STRAT_AMETHYST_UST_ADDRESS_BSC,
   STRAT_ASHARE_UST_ADDRESS_BSC,
-} from "./strats/bsc/bsc-data";
+} from "./strats/bsc/bsc-addresses";
 
 async function main() {
   const QuartzVault = await ethers.getContractFactory("QuartzVault");
@@ -12,9 +12,9 @@ async function main() {
   // string memory _symbol,
   // uint256 _approvalDelay
   const vault = await QuartzVault.deploy(
-    STRAT_ASHARE_UST_ADDRESS_BSC,
-    "Quartz ASHARE-UST Vault LP",
-    `Quartz-ASHARE-UST-VaultLP`,
+    STRAT_1QSHARE_UST_ADDRESS_BSC,
+    "Quartz 1QSHARE-UST Vault LP",
+    `qtz1QSHARE-UST-VLP`,
     10
   );
 
