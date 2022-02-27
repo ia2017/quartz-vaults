@@ -15,7 +15,13 @@ dotenv.config();
 
 const config: HardhatUserConfig = {
   solidity: {
-    compilers: [{ version: "0.8.4" }, { version: "0.6.12" }],
+    version: "0.6.12",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200,
+      },
+    },
   },
   networks: {
     harmony_mainnet: {
@@ -32,6 +38,9 @@ const config: HardhatUserConfig = {
           ? [process.env.BSC_MAINNET_DEV_KEY]
           : [],
     },
+  },
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_API_KEY,
   },
 };
 
