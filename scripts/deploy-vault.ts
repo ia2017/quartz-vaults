@@ -1,22 +1,23 @@
 import { predictAddresses } from "../utils/predictAddresses";
 import { deployCommonVault, deployStrategyCommon } from "../utils/deploy-util";
-import { STRAT_UST_1QSHARE_BSC } from "./strats/bsc/strat-1qshare-ust";
+import { STRAT_UST_AMETHYST_BSC } from "./strats/bsc/strat-amethyst-ust";
 
 async function main() {
+  const currentStrat = STRAT_UST_AMETHYST_BSC;
+
   const predictedAddresses = await predictAddresses();
 
   const vault = await deployCommonVault(
     predictedAddresses.strategy,
-    STRAT_UST_1QSHARE_BSC.nameToken0,
-    STRAT_UST_1QSHARE_BSC.nameToken1
+    currentStrat.nameToken0,
+    currentStrat.nameToken1
   );
 
-  STRAT_UST_1QSHARE_BSC.constructorArgs.vault = vault.address;
-  const strategy = await deployStrategyCommon(
-    STRAT_UST_1QSHARE_BSC.constructorArgs
-  );
+  currentStrat.constructorArgs.vault = vault.address;
+  const strategy = await deployStrategyCommon(currentStrat.constructorArgs);
 
-  await strategy.setPendingRewardsFunctionName("pendingShare");
+  const tx = await strategy.setPendingRewardsFunctionName("pendingShare");
+  await tx.wait(1);
 
   console.log({
     vault: vault.address,
@@ -24,7 +25,7 @@ async function main() {
   });
 
   let verifyArgs = "";
-  Object.values(STRAT_UST_1QSHARE_BSC.constructorArgs).forEach((arg) => {
+  Object.values(currentStrat.constructorArgs).forEach((arg) => {
     if (Array.isArray(arg)) {
       verifyArgs += `"${JSON.stringify(arg)}"` + " ";
     } else {

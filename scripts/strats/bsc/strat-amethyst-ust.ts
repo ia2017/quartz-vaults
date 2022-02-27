@@ -1,4 +1,3 @@
-import { ethers } from "hardhat";
 import {
   DAO_FUND_ADDRESS_BSC,
   DEFAULT_KEEPER_ADDRESS_BSC,
@@ -8,28 +7,7 @@ import {
   REWARD_POOL_ADDRESS_BSC,
 } from "./bsc-addresses";
 import { TOKENS } from "../../data/tokens";
-
-// Pair/LP address
-const WANT = PAIR_AMETHYST_UST_ADDRESS;
-
-const POOL_ID = 0;
-
-// Reward Pool
-const CHEF_ADDRESS = REWARD_POOL_ADDRESS_BSC;
-
-// Deploy strategy and then updating its vault with setVault() seems to be easiest for now
-const VAULT_ADDRESS = ethers.constants.AddressZero;
-
-const ROUTER_ADDRESS = PANCAKESWAP_ROUTER_ADDRESS;
-
-// Placeholder address, Keeper is an extra additional account to give access to the strategy as needed
-const KEEPER_ADDRESS = DEFAULT_KEEPER_ADDRESS_BSC;
-
-// Dev account address
-const STRATEGIST_ADDRESS = DEFAULT_STRATEGIST_ADDRESS_BSC;
-
-// Quartz DAO Fund
-const PROTOCOL_FEE_RECEPIENT = DAO_FUND_ADDRESS_BSC;
+import { StratCommonDeployConfig } from "../../../utils/deploy-util";
 
 // Output = ASHARE: ASHARE -> UST -> BNB
 const _outputToNativeRoute: string[] = [
@@ -41,44 +19,32 @@ const _outputToNativeRoute: string[] = [
 // Token0 = UST: ASHARE -> UST
 const _outputToLp0Route: string[] = [TOKENS.ASHARE.BSC, TOKENS.UST.BSC];
 
-// Token1 = AMES:ASHARE -> UST -> AMES
+// Token1 = AMES: ASHARE -> UST -> AMES
 const _outputToLp1Route: string[] = [
   TOKENS.ASHARE.BSC,
   TOKENS.UST.BSC,
   TOKENS.AMETHYST.BSC,
 ];
 
-async function main() {
-  const StrategyQuartzLP = await ethers.getContractFactory("StrategyQuartzLP");
-  //   address _want,
-  //   uint256 _poolId,
-  //   address _chef,
-  //   address _vault,
-  //   address _unirouter,
-  //   address _keeper,
-  //   address _strategist,
-  //   address _protocolFeeRecipient,
-  //   address[] memory _outputToNativeRoute,
-  //   address[] memory _outputToLp0Route,
+export const nameToken0 = "UST";
+export const nameToken1 = "AMETHYST";
 
-  const strat = await StrategyQuartzLP.deploy(
-    WANT,
-    POOL_ID,
-    CHEF_ADDRESS,
-    VAULT_ADDRESS,
-    ROUTER_ADDRESS,
-    KEEPER_ADDRESS,
-    STRATEGIST_ADDRESS,
-    PROTOCOL_FEE_RECEPIENT,
-    _outputToNativeRoute,
-    _outputToLp0Route,
-    _outputToLp1Route
-  );
-  await strat.deployed();
-  console.log("StrategyQuartzLP deployed to:", strat.address);
-}
+export const constructorArgs: StratCommonDeployConfig = {
+  want: PAIR_AMETHYST_UST_ADDRESS,
+  poolId: 0,
+  chefAddress: REWARD_POOL_ADDRESS_BSC,
+  vault: null,
+  router: PANCAKESWAP_ROUTER_ADDRESS,
+  keeper: DEFAULT_KEEPER_ADDRESS_BSC,
+  strategist: DEFAULT_STRATEGIST_ADDRESS_BSC,
+  protocolFeeRecipient: DAO_FUND_ADDRESS_BSC,
+  _outputToNativeRoute,
+  _outputToLp0Route,
+  _outputToLp1Route,
+};
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+export const STRAT_UST_AMETHYST_BSC = {
+  nameToken0,
+  nameToken1,
+  constructorArgs,
+};
