@@ -37,6 +37,20 @@ const _outputToLp0Route: string[] = [];
 //
 const _outputToLp1Route: string[] = [];
 
+const args = [
+  WANT,
+  POOL_ID,
+  CHEF_ADDRESS,
+  VAULT_ADDRESS,
+  ROUTER_ADDRESS,
+  KEEPER_ADDRESS,
+  STRATEGIST_ADDRESS,
+  PROTOCOL_FEE_RECEPIENT,
+  _outputToNativeRoute,
+  _outputToLp0Route,
+  _outputToLp1Route,
+];
+
 async function main() {
   const StrategyQuartzLP = await ethers.getContractFactory("StrategyQuartzLP");
   //   address _want,
