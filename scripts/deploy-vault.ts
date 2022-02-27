@@ -1,11 +1,6 @@
 import { predictAddresses } from "../utils/predictAddresses";
-import {
-  deployCommonVault,
-  deployStrategyCommon,
-  saveVaultData,
-} from "../utils/deploy-util";
+import { deployCommonVault, deployStrategyCommon } from "../utils/deploy-util";
 import { STRAT_UST_1QSHARE_BSC } from "./strats/bsc/strat-1qshare-ust";
-import { CHAINS } from "./data/chains";
 
 async function main() {
   const predictedAddresses = await predictAddresses();
