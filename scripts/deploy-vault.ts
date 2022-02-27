@@ -1,47 +1,43 @@
-import { ethers } from "hardhat";
 import { predictAddresses } from "../utils/predictAddresses";
-import { deployCommonVault } from "./deploy-util";
 import {
-  STRAT_1QSHARE_UST_ADDRESS_BSC,
-  STRAT_AMETHYST_UST_ADDRESS_BSC,
-  STRAT_ASHARE_UST_ADDRESS_BSC,
-} from "./strats/bsc/bsc-addresses";
+  deployCommonVault,
+  deployStrategyCommon,
+  saveVaultData,
+} from "../utils/deploy-util";
 import { STRAT_UST_1QSHARE_BSC } from "./strats/bsc/strat-1qshare-ust";
+import { CHAINS } from "./data/chains";
 
 async function main() {
   const predictedAddresses = await predictAddresses();
-  console.log(predictedAddresses);
 
-  await deployCommonVault(
+  const vault = await deployCommonVault(
+    predictedAddresses.strategy,
     STRAT_UST_1QSHARE_BSC.nameToken0,
-    STRAT_UST_1QSHARE_BSC.nameToken1,
+    STRAT_UST_1QSHARE_BSC.nameToken1
+  );
+
+  STRAT_UST_1QSHARE_BSC.constructorArgs.vault = vault.address;
+  const strategy = await deployStrategyCommon(
     STRAT_UST_1QSHARE_BSC.constructorArgs
   );
 
-  // const QuartzVault = await ethers.getContractFactory("QuartzVault");
-  // // IStrategy _strategy,
-  // // string memory _name,
-  // // string memory _symbol,
-  // // uint256 _approvalDelay
-  // const vault = await QuartzVault.deploy(
-  //   STRAT_1QSHARE_UST_ADDRESS_BSC,
-  //   "Quartz 1QSHARE-UST Vault LP",
-  //   `qtz1QSHARE-UST-VLP`,
-  //   10
-  // );
+  await strategy.setPendingRewardsFunctionName("pendingShare");
 
-  // await vault.deployed();
+  console.log({
+    vault: vault.address,
+    strategy: strategy.address,
+  });
 
-  // console.log("QuartzVault deployed to:", vault.address);
+  let verifyArgs = "";
+  Object.values(STRAT_UST_1QSHARE_BSC.constructorArgs).forEach((arg) => {
+    if (Array.isArray(arg)) {
+      verifyArgs += `"${JSON.stringify(arg)}"` + " ";
+    } else {
+      verifyArgs += typeof arg === "number" ? arg + " " : `"${arg}" `;
+    }
+  });
 
-  // const Strategy = await ethers.getContractFactory('StrategyQuartzLP');
-  // const strategy = await Strategy.deploy(
-  //   ...config.stratArgs,
-  //   predictedAddresses.vault
-  // );
-
-  // await strategy.deployed();
-  // console.log("StrategyQuartzLP deployed to:", strategy.address);
+  console.log(verifyArgs);
 }
 
 main().catch((error) => {

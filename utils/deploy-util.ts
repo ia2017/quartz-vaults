@@ -1,5 +1,7 @@
 import { ethers } from "hardhat";
-import { predictAddresses } from "../utils/predictAddresses";
+import { QuartzVault, StrategyQuartzLP } from "../typechain";
+import { predictAddresses } from "./predictAddresses";
+import * as fs from "fs-extra";
 
 export interface VaultDeployConfig {
   tokenName: string;
@@ -25,35 +27,38 @@ export interface StratCommonDeployConfig {
 }
 
 export const deployCommonVault = async (
+  strategyAddress: string,
   nameToken0: string,
-  nameToken1: string,
-  stratArgs: StratCommonDeployConfig
+  nameToken1: string
 ) => {
   const predictedAddresses = await predictAddresses();
 
   const Vault = await ethers.getContractFactory("QuartzVault");
+  const vaultArgs = {
+    strategyAddress,
+    tokenName: `Quartz ${nameToken0}-${nameToken1} Vault LP`,
+    tokenSymbol: `qtz${nameToken0}-${nameToken1}-VLP`,
+    approvalDelay: 10,
+  };
   const vault = await Vault.deploy(
-    predictedAddresses.strategy,
-    `Quartz ${nameToken0}-${nameToken1} Vault LP`,
-    `qtz${nameToken0}-${nameToken1}-VLP`,
-    10
+    vaultArgs.strategyAddress,
+    vaultArgs.tokenName,
+    vaultArgs.tokenSymbol,
+    vaultArgs.approvalDelay
   );
   await vault.deployed();
   console.log("QuartzVault deployed to:", vault.address);
   console.log(
     `predicted: ${predictedAddresses.vault} - actual: ${vault.address}`
   );
-  const strategy = await deployStrategyCommon(vault.address, stratArgs);
 
-  return { vault, strategy };
+  return vault;
 };
 
 export const deployStrategyCommon = async (
-  vaultAddress: string,
   stratArgs: StratCommonDeployConfig
 ) => {
   const Strategy = await ethers.getContractFactory("StrategyQuartzLP");
-
   //   address _want,
   //   uint256 _poolId,
   //   address _chef,
@@ -68,7 +73,7 @@ export const deployStrategyCommon = async (
     stratArgs.want,
     stratArgs.poolId,
     stratArgs.chefAddress,
-    vaultAddress,
+    stratArgs.vault,
     stratArgs.router,
     stratArgs.keeper,
     stratArgs.strategist,
@@ -80,4 +85,17 @@ export const deployStrategyCommon = async (
 
   await strategy.deployed();
   console.log("StrategyQuartzLP deployed to:", strategy.address);
+  return strategy;
+};
+
+export const saveVaultData = async (
+  vault: QuartzVault,
+  stratArgs: StratCommonDeployConfig,
+  chainId: number
+) => {
+  try {
+    // const data = await fs.readJSON();
+  } catch (error) {
+    throw error;
+  }
 };
