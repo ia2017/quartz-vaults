@@ -1,9 +1,9 @@
 import { predictAddresses } from "../utils/predictAddresses";
 import { deployCommonVault, deployStrategyCommon } from "../utils/deploy-util";
-import { STRAT_UST_AMETHYST_BSC } from "./strats/bsc/strat-amethyst-ust";
+import { STRAT_UST_ASHARE_BSC } from "./strats/bsc/strat-ashare-ust";
 
 async function main() {
-  const currentStrat = STRAT_UST_AMETHYST_BSC;
+  const currentStrat = STRAT_UST_ASHARE_BSC;
 
   const predictedAddresses = await predictAddresses();
 
