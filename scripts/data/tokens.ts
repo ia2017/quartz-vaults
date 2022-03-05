@@ -1,6 +1,9 @@
 export const TOKENS = {
+  QUARTZ: {
+    HARMONY: "0xb9e05b4c168b56f73940980ae6ef366354357009",
+  },
   QSHARE: {
-    HARMONY: "",
+    HARMONY: "0xfa4b16b0f63f5a6d0651592620d585d308f749a4",
     BSC: "0x36d53ed6380313f3823eed2f44dddb6d1d52f656",
   },
   UST: {

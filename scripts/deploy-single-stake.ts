@@ -1,23 +1,27 @@
 import { predictAddresses } from "../utils/predictAddresses";
-import { deployCommonVault, deployStrategyCommon } from "../utils/deploy-util";
-import { STRAT_ONE_QSHARE_HARMONY } from "./strats/harmony/strat-one-qshare";
+import {
+  deploySingleStakeVault,
+  deployStrategySingleStake,
+} from "../utils/deploy-util";
+import { STRAT_SINGLE_STAKE_QUARTZ_HARMONY } from "./strats/harmony/strat-single-quartz";
 
 async function main() {
-  const currentStrat = STRAT_ONE_QSHARE_HARMONY;
+  const currentStrat = STRAT_SINGLE_STAKE_QUARTZ_HARMONY;
 
   const predictedAddresses = await predictAddresses();
 
-  const vault = await deployCommonVault(
+  const vault = await deploySingleStakeVault(
     predictedAddresses.strategy,
-    currentStrat.nameToken0,
-    currentStrat.nameToken1
+    currentStrat.tokenName
   );
 
   currentStrat.constructorArgs.vault = vault.address;
 
-  // Update rewards check function name to match our reward pool/chef name
-  const strategy = await deployStrategyCommon(currentStrat.constructorArgs);
+  const strategy = await deployStrategySingleStake(
+    currentStrat.constructorArgs
+  );
 
+  // Update rewards check function name to match our reward pool/chef name
   const tx = await strategy.setPendingRewardsFunctionName("pendingShare");
   await tx.wait(1);
 
