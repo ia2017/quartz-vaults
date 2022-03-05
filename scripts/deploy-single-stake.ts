@@ -3,11 +3,10 @@ import {
   deploySingleStakeVault,
   deployStrategySingleStake,
 } from "../utils/deploy-util";
-import { STRAT_SINGLE_STAKE_QUARTZ_HARMONY } from "./strats/harmony/strat-single-quartz";
+import { STRAT_SINGLE_STAKE_1QSHARE_BSC } from "./strats/bsc/strat-1qshare-single";
 
 async function main() {
-  const currentStrat = STRAT_SINGLE_STAKE_QUARTZ_HARMONY;
-
+  const currentStrat = STRAT_SINGLE_STAKE_1QSHARE_BSC;
   const predictedAddresses = await predictAddresses();
 
   const vault = await deploySingleStakeVault(

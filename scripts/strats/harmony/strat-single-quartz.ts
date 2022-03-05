@@ -19,6 +19,7 @@ const constructorArgs: StratSingleStakeConfig = {
   strategist: DEFAULT_STRATEGIST_ADDRESS_HARMONY,
   protocolFeeRecipient: DAO_ADDRESS_HARMONY,
 
+  // Reward token: QSHARE
   // QSHARE -> ONE
   _outputToNativeRoute: [TOKENS.QSHARE.HARMONY, TOKENS.ONE_WRAPPED.HARMONY],
 
