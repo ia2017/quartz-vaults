@@ -1,9 +1,9 @@
 import { predictAddresses } from "../utils/predictAddresses";
 import { deployCommonVault, deployStrategyCommon } from "../utils/deploy-util";
-import { STRAT_ONE_QSHARE_HARMONY } from "./strats/harmony/strat-one-qshare";
+import { STRAT_AMETHYST_ASHARE_BSC } from "./strats/bsc/strat-ames-ashare";
 
 async function main() {
-  const currentStrat = STRAT_ONE_QSHARE_HARMONY;
+  const currentStrat = STRAT_AMETHYST_ASHARE_BSC;
 
   const predictedAddresses = await predictAddresses();
 
