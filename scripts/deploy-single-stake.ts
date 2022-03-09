@@ -3,10 +3,10 @@ import {
   deploySingleStakeVault,
   deployStrategySingleStake,
 } from "../utils/deploy-util";
-import { STRAT_SINGLE_STAKE_1QSHARE_BSC } from "./strats/bsc/strat-1qshare-single";
+import { STRAT_SINGLE_STAKE_AMETHYST_BSC } from "./strats/bsc/strat-ames-single";
 
 async function main() {
-  const currentStrat = STRAT_SINGLE_STAKE_1QSHARE_BSC;
+  const currentStrat = STRAT_SINGLE_STAKE_AMETHYST_BSC;
   const predictedAddresses = await predictAddresses();
 
   const vault = await deploySingleStakeVault(
