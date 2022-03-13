@@ -308,12 +308,16 @@ contract StrategyQuartzSingleStake is StratManager, FeeManager {
     }
 
     /// @dev Allow updating to a more optimal routing path if needed
-    function setOutputToNative(address[] memory path) external onlyManager {
-        outputToNativeRoute = path;
+    function setOutputToWant(address[] memory path) external onlyManager {
+        require(path.length >= 2, "!path");
+
+        outputToWantRoute = path;
     }
 
     /// @dev Allow updating to a more optimal routing path if needed
-    function setOutputToWant(address[] memory path) external onlyManager {
-        outputToWantRoute = path;
+    function setOutputToNative(address[] memory path) external onlyManager {
+        require(path.length >= 2, "!path");
+
+        outputToNativeRoute = path;
     }
 }

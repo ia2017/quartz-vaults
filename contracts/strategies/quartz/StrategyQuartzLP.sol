@@ -335,16 +335,6 @@ contract StrategyQuartzLP is StratManager, FeeManager {
         deposit();
     }
 
-    /// @dev Allow updating to a more optimal routing path if needed
-    function setOutputToLp0(address[] memory path) external onlyManager {
-        outputToLp0Route = path;
-    }
-
-    /// @dev Allow updating to a more optimal routing path if needed
-    function setOutputToLp1(address[] memory path) external onlyManager {
-        outputToLp1Route = path;
-    }
-
     function _giveAllowances() internal {
         IERC20(want).safeApprove(chef, uint256(-1));
         IERC20(output).safeApprove(unirouter, uint256(-1));
@@ -373,5 +363,26 @@ contract StrategyQuartzLP is StratManager, FeeManager {
 
     function outputToLp1() external view returns (address[] memory) {
         return outputToLp1Route;
+    }
+
+    /// @dev Allow updating to a more optimal routing path if needed
+    function setOutputToLp0(address[] memory path) external onlyManager {
+        require(path.length >= 2, "!path");
+
+        outputToLp0Route = path;
+    }
+
+    /// @dev Allow updating to a more optimal routing path if needed
+    function setOutputToLp1(address[] memory path) external onlyManager {
+        require(path.length >= 2, "!path");
+
+        outputToLp1Route = path;
+    }
+
+    /// @dev Allow updating to a more optimal routing path if needed
+    function setOutputToNative(address[] memory path) external onlyManager {
+        require(path.length >= 2, "!path");
+
+        outputToNativeRoute = path;
     }
 }
