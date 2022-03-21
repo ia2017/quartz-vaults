@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: MIT
+pragma solidity 0.6.12;
 
-pragma solidity >=0.6.0 <0.9.0;
+import "../interfaces/common/IUniswapRouterETH.sol";
 
-interface IUniswapRouterETH {
+contract MockRouter is IUniswapRouterETH {
     function addLiquidity(
         address tokenA,
         address tokenB,
@@ -13,12 +14,18 @@ interface IUniswapRouterETH {
         address to,
         uint256 deadline
     )
-        external
+        public
+        override
         returns (
             uint256 amountA,
             uint256 amountB,
             uint256 liquidity
-        );
+        )
+    {
+        amountA = 0;
+        amountB = 0;
+        liquidity = 0;
+    }
 
     function removeLiquidity(
         address tokenA,
@@ -28,7 +35,10 @@ interface IUniswapRouterETH {
         uint256 amountBMin,
         address to,
         uint256 deadline
-    ) external returns (uint256 amountA, uint256 amountB);
+    ) public override returns (uint256 amountA, uint256 amountB) {
+        amountA = 0;
+        amountB = 0;
+    }
 
     function swapExactTokensForTokens(
         uint256 amountIn,
@@ -36,10 +46,16 @@ interface IUniswapRouterETH {
         address[] calldata path,
         address to,
         uint256 deadline
-    ) external returns (uint256[] memory amounts);
+    ) public override returns (uint256[] memory amounts) {
+        amounts = new uint256[](2);
+    }
 
     function getAmountsOut(uint256 amountIn, address[] calldata path)
         external
         view
-        returns (uint256[] memory amounts);
+        override
+        returns (uint256[] memory amounts)
+    {
+        amounts = new uint256[](2);
+    }
 }

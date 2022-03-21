@@ -155,14 +155,16 @@ contract SharesVault is ERC20, Ownable, ReentrancyGuard {
             currentDailyDeposits.currentDepositTotal = 0;
         }
 
+        uint256 newDepositsForDay = currentDailyDeposits
+            .currentDepositTotal
+            .add(_amountIn);
         require(
-            currentDailyDeposits.currentDepositTotal + _amountIn <
-                dailyDepositLimit,
+            newDepositsForDay < dailyDepositLimit,
             "Exceeds daily deposit limit"
         );
 
         currentDailyDeposits.timeLastSet = block.timestamp;
-        currentDailyDeposits.currentDepositTotal = currentDailyDeposits.currentDepositTotal.add(_amountIn);
+        currentDailyDeposits.currentDepositTotal = newDepositsForDay;
     }
 
     /**

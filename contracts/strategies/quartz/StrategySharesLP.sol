@@ -48,7 +48,7 @@ contract StrategySharesLP is StratManager, FeeManager {
     // Token0 in main pair
     address public protocolLpToken0;
 
-    // Token0 in main pair
+    // Token1 in main pair
     address public protocolLpToken1;
 
     // Routing path from output to Token0 in main pair
@@ -186,11 +186,24 @@ contract StrategySharesLP is StratManager, FeeManager {
             wantBal = _amount;
         }
 
+        // Deduct withdrawal fees as needed
         if (tx.origin != owner() && !paused()) {
             uint256 withdrawalFeeAmount = wantBal.mul(withdrawalFee).div(
                 WITHDRAWAL_MAX
             );
+
+            uint256 protocolWithdrawalFeeAmount = wantBal
+                .mul(protocolWithdrawalFee)
+                .div(WITHDRAWAL_MAX);
+
             wantBal = wantBal.sub(withdrawalFeeAmount);
+
+            // Subtract protocol portion and send to treasury
+            wantBal = wantBal.sub(protocolWithdrawalFeeAmount);
+            IERC20(want).safeTransfer(
+                protocolFeeRecipient,
+                protocolWithdrawalFeeAmount
+            );
         }
 
         IERC20(want).safeTransfer(vault, wantBal);
@@ -233,15 +246,17 @@ contract StrategySharesLP is StratManager, FeeManager {
 
     /// @dev Used to charge fees on harvested rewards before executing the compounding process.
     function chargeFees(address callFeeRecipient) internal {
-        // 4.5% fee
+        // 6% base fee
+        // - 2% to Treasury
+        // - 2% AMES-UST LP (treasury owned)
+        // - 2% Buy and burn AMES
+
         uint256 rewardTokenBalance = IERC20(output)
             .balanceOf(address(this))
-            .mul(45)
-            .div(1000);
+            .mul(6)
+            .div(100);
 
-        // SET OUTPUT TO NATIVE TO UST..FJ'SFDL
-
-        // Convert whatever the reward token is into the current chains native token
+        // Convert whatever the reward token is into the desired output token for rewards
         IUniswapRouterETH(unirouter).swapExactTokensForTokens(
             rewardTokenBalance,
             0,
@@ -261,7 +276,6 @@ contract StrategySharesLP is StratManager, FeeManager {
         // Handle protocol items
         _handleTreasuryFee();
         _addProtocolLiquidity();
-        _depositProtocolLP();
     }
 
     // Adds liquidity to AMM and gets more LP tokens.
@@ -351,7 +365,7 @@ contract StrategySharesLP is StratManager, FeeManager {
                 nativeOut = amountOut[amountOut.length - 1];
             } catch {}
         }
-        return nativeOut.mul(45).div(1000).mul(callFee).div(MAX_FEE);
+        return nativeOut.mul(6).div(100).mul(callFee).div(MAX_FEE);
     }
 
     function setHarvestOnDeposit(bool _harvestOnDeposit) external onlyManager {
@@ -425,41 +439,55 @@ contract StrategySharesLP is StratManager, FeeManager {
     }
 
     /// @dev Allow updating to a more optimal routing path if needed
-    function setOutputToLp0(address[] memory path) external onlyManager {
-        require(path.length >= 2, "!path");
+    function setOutputToLp0(address[] memory _path) external onlyManager {
+        require(_path.length >= 2, "!path");
+        require(_path[0] == output, "outputToLp0Route[0] != output");
+        require(_path[_path.length - 1] == lpToken0, "!path to lpToken0");
 
-        outputToLp0Route = path;
+        outputToLp0Route = _path;
     }
 
     /// @dev Allow updating to a more optimal routing path if needed
-    function setOutputToLp1(address[] memory path) external onlyManager {
-        require(path.length >= 2, "!path");
+    function setOutputToLp1(address[] memory _path) external onlyManager {
+        require(_path.length >= 2, "!path");
+        require(_path[0] == output, "outputToLp1Route[0] != output");
+        require(_path[_path.length - 1] == lpToken1, "!path to lpToken1");
 
-        outputToLp1Route = path;
+        outputToLp1Route = _path;
     }
 
     /// @dev Allow updating to a more optimal routing path if needed
-    function setOutputToNative(address[] memory path) external onlyManager {
-        require(path.length >= 2, "!path");
+    function setOutputToNative(address[] memory _path) external onlyManager {
+        require(_path.length >= 2, "!path");
+        require(_path[0] == output, "outputToNativeRoute[0] != output");
 
-        outputToNativeRoute = path;
+        outputToNativeRoute = _path;
     }
 
-    // ======== PROTOCOL ITEMS ========== //
+    // =================== PROTOCOL ITEMS ======================= //
 
+    /**
+     * @dev Swaps half of remaining fee balance and transfers to treasury.
+     * Remaining balance is left for adding liquidity for the treasury.
+     */
     function _handleTreasuryFee() private {
         uint256 nativeBal = IERC20(native).balanceOf(address(this));
         uint256 protocolFeeAmount = nativeBal.mul(protocolFee).div(MAX_FEE);
 
         // Split remaing native amount between treasury and providing LP
-        uint256 amountToTreasury = protocolFeeAmount.div(2);
+        uint256 treasuryHalf = protocolFeeAmount.div(2);
 
         // Trusted external call
-        IERC20(native).safeTransfer(protocolFeeRecipient, amountToTreasury);
+        IERC20(native).safeTransfer(protocolFeeRecipient, treasuryHalf);
 
-        emit TreasuryTransfer(amountToTreasury);
+        emit TreasuryTransfer(treasuryHalf);
     }
 
+    /**
+     * @dev Uses funds from fees and adds liquidity to core protocol LP pool.
+     * LP tokens are transferred to the treasury as Protocol Owned Liquidity.
+     * Should be called after `_handleTreasuryFee` to use the last of any remaining balance.
+     */
     function _addProtocolLiquidity() private {
         uint256 nativeHalf = IERC20(native).balanceOf(address(this)).div(2);
 
@@ -497,21 +525,40 @@ contract StrategySharesLP is StratManager, FeeManager {
                 lpBal1,
                 1,
                 1,
-                address(this),
+                protocolFeeRecipient,
                 now
             );
 
         emit ProtocolLiquidity(amountA, amountB, liquidity);
     }
 
-    function _depositProtocolLP() private {
-        uint256 protocolLpBalance = IERC20(protocolPairAddress).balanceOf(
-            address(this)
+    /// @dev Allow updating to a more optimal routing path if needed
+    function setProtocolOutputToLp0(address[] memory _path)
+        external
+        onlyManager
+    {
+        require(_path.length >= 2, "!path");
+        require(_path[0] == output, "protocolLp0Route[0] != output");
+        require(
+            _path[_path.length - 1] == protocolLpToken0,
+            "!path to protocolLpToken0"
         );
 
-        if (protocolLpBalance > 0) {
-            IMasterChef(chef).deposit(protocolLpPoolId, protocolLpBalance);
-            emit ProtocolLiquidityDeposit(protocolLpBalance);
-        }
+        protocolLp0Route = _path;
+    }
+
+    /// @dev Allow updating to a more optimal routing path if needed
+    function setProtocolOutputToLp1(address[] memory _path)
+        external
+        onlyManager
+    {
+        require(_path.length >= 2, "!path");
+        require(_path[0] == output, "protocolLp1Route[0] != output");
+        require(
+            _path[_path.length - 1] == protocolLpToken1,
+            "!path to protocolLpToken1"
+        );
+
+        protocolLp1Route = _path;
     }
 }
