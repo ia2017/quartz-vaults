@@ -7,9 +7,10 @@ import { STRAT_SINGLE_STAKE_AMETHYST_BSC } from "./strats/bsc/strat-ames-single"
 
 async function main() {
   const currentStrat = STRAT_SINGLE_STAKE_AMETHYST_BSC;
-  const predictedAddresses = await predictAddresses();
+  const predictedAddresses = await predictAddresses('');
 
   const vault = await deploySingleStakeVault(
+    '0x570108E54d11348BD3734FF73dc55eC52c28d3EF',
     predictedAddresses.strategy,
     currentStrat.tokenName
   );

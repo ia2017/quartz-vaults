@@ -1,20 +1,23 @@
 import { predictAddresses } from "../utils/predictAddresses";
-import { deployStrategySharesLP, deployStrategySharesLpVault } from "../utils/deploy-util";
+import { deployStrategySharesLP, deploySharesLpVault } from "../utils/deploy-util";
 import { ethers } from "hardhat";
 import { STRAT_PROTO_SHARES_UST_BSC } from "./strats/bsc/strat-proto-shares-ust";
 
 async function main() {
   const currentStrat = STRAT_PROTO_SHARES_UST_BSC;
 
-  const predictedAddresses = await predictAddresses();
+  const predictedAddresses = await predictAddresses('0x2e86D29cFea7c4f422f7fCCF97986bbBa03e1a7F');
 
   const DEFAULT_DEPOSIT_LIMIT = ethers.utils.parseEther('1000');
+  const USER_DEPOSIT_LIMIT = ethers.utils.parseEther('100');
 
-  const vault = await deployStrategySharesLpVault(
+  const vault = await deploySharesLpVault(
+    '0x2e86D29cFea7c4f422f7fCCF97986bbBa03e1a7F',
     predictedAddresses.strategy,
     currentStrat.nameToken0,
     currentStrat.nameToken1,
-    DEFAULT_DEPOSIT_LIMIT
+    DEFAULT_DEPOSIT_LIMIT,
+    USER_DEPOSIT_LIMIT
   );
 
   currentStrat.constructorArgs.vault = vault.address;

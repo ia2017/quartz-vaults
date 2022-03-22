@@ -59,11 +59,12 @@ export interface StratSingleStakeConfig {
 }
 
 export const deployCommonVault = async (
+  ownerAddress: string,
   strategyAddress: string,
   nameToken0: string,
   nameToken1: string
 ) => {
-  const predictedAddresses = await predictAddresses();
+  const predictedAddresses = await predictAddresses(ownerAddress);
 
   const Vault = await ethers.getContractFactory("QuartzVault");
   const vaultArgs = {
@@ -87,13 +88,15 @@ export const deployCommonVault = async (
   return vault;
 };
 
-export const deployStrategySharesLpVault = async (
+export const deploySharesLpVault = async (
+  ownerAddress: string,
   strategyAddress: string,
   nameToken0: string,
   nameToken1: string,
-  depositLimit: BigNumberish
+  depositLimit: BigNumberish,
+  userLimit: BigNumberish
 ) => {
-  const predictedAddresses = await predictAddresses();
+  const predictedAddresses = await predictAddresses(ownerAddress);
 
   const Vault = await ethers.getContractFactory("SharesVault");
   const vaultArgs = {
@@ -107,11 +110,11 @@ export const deployStrategySharesLpVault = async (
     vaultArgs.tokenName,
     vaultArgs.tokenSymbol,
     vaultArgs.approvalDelay,
-    depositLimit
-
+    depositLimit,
+    userLimit
   );
   await vault.deployed();
-  console.log("QuartzVault deployed to:", vault.address);
+  console.log("SharesVault deployed to:", vault.address);
   console.log(
     `predicted: ${predictedAddresses.vault} - actual: ${vault.address}`
   );
@@ -121,10 +124,11 @@ export const deployStrategySharesLpVault = async (
 
 
 export const deploySingleStakeVault = async (
+  ownerAddress: string,
   strategyAddress: string,
   tokenName: string
 ) => {
-  const predictedAddresses = await predictAddresses();
+  const predictedAddresses = await predictAddresses(ownerAddress);
 
   const Vault = await ethers.getContractFactory("QuartzVault");
   const vaultArgs = {
@@ -140,7 +144,7 @@ export const deploySingleStakeVault = async (
     vaultArgs.approvalDelay
   );
   await vault.deployed();
-  console.log("QuartzVault deployed to:", vault.address);
+  console.log("AmesVault deployed to:", vault.address);
   console.log(
     `predicted: ${predictedAddresses.vault} - actual: ${vault.address}`
   );

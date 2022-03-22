@@ -5,9 +5,10 @@ import { STRAT_AMETHYST_ASHARE_BSC } from "./strats/bsc/strat-ames-ashare";
 async function main() {
   const currentStrat = STRAT_AMETHYST_ASHARE_BSC;
 
-  const predictedAddresses = await predictAddresses();
+  const predictedAddresses = await predictAddresses('0x570108E54d11348BD3734FF73dc55eC52c28d3EF');
 
   const vault = await deployCommonVault(
+    '0x570108E54d11348BD3734FF73dc55eC52c28d3EF',
     predictedAddresses.strategy,
     currentStrat.nameToken0,
     currentStrat.nameToken1
