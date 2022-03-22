@@ -438,6 +438,8 @@ contract StrategySharesLP is StratManager, FeeManager {
 
         // Protocol token approvals
         IERC20(protocolLpToken0).safeApprove(unirouter, 0);
+        IERC20(protocolLpToken0).safeApprove(unirouter, uint256(-1));
+        IERC20(protocolLpToken1).safeApprove(unirouter, 0);
         IERC20(protocolLpToken1).safeApprove(unirouter, uint256(-1));
     }
 
