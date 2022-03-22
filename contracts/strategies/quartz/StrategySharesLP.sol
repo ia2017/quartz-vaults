@@ -520,8 +520,7 @@ contract StrategySharesLP is StratManager, FeeManager {
 
     // ============================= PROTOCOL ITEMS ================================ //
 
-    /// @dev Takes the current `burnFee` from rewards and swaps to burnToken,
-    /// using the burn address as the recipient of the swap.
+    /// @dev Takes some of amount of rewards and swaps to and burns the burn token
     function _doBuybackAndBurn(uint256 _amountNativeIn) private {
         IUniswapRouterETH(unirouter)
             .swapExactTokensForTokens(
@@ -634,13 +633,5 @@ contract StrategySharesLP is StratManager, FeeManager {
 
         burnTokenAddress = _burnTokenAddress;
         nativeToBuybackRoute = _nativeToBuybackRoute;
-    }
-
-    function transferToTreasury() external onlyManager {
-        uint256 nativeBalance = IERC20(native).balanceOf(address(this));
-
-        if (nativeBalance > 0) {
-            IERC20(native).safeTransfer(protocolFeeRecipient, nativeBalance);
-        }
     }
 }
