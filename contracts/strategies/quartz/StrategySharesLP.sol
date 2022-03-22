@@ -77,11 +77,11 @@ contract StrategySharesLP is StratManager, FeeManager {
 
     event StratHarvest(
         address indexed harvester,
-        uint256 wantHarvested,
-        uint256 tvl
+        uint256 indexed wantHarvested,
+        uint256 indexed tvl
     );
-    event Deposit(uint256 tvl);
-    event Withdraw(uint256 tvl);
+    event Deposit(address indexed who, uint256 indexed tvl);
+    event Withdraw(address indexed who, uint256 indexed tvl);
 
     constructor(
         address _want,
@@ -167,8 +167,8 @@ contract StrategySharesLP is StratManager, FeeManager {
         burnTokenAddress = _burnTokenAddress;
 
         require(
-            _nativeToBuybackRoute[0] == output,
-            "_nativeToBuybackRoute[0] != output"
+            _nativeToBuybackRoute[0] == native,
+            "_nativeToBuybackRoute[0] != native"
         );
         require(
             _nativeToBuybackRoute[_nativeToBuybackRoute.length - 1] ==
@@ -186,7 +186,7 @@ contract StrategySharesLP is StratManager, FeeManager {
 
         if (wantBal > 0) {
             IMasterChef(chef).deposit(poolId, wantBal);
-            emit Deposit(balanceOf());
+            emit Deposit(msg.sender, balanceOf());
         }
     }
 
@@ -209,14 +209,13 @@ contract StrategySharesLP is StratManager, FeeManager {
             uint256 withdrawalFeeAmount = wantBal.mul(withdrawalFee).div(
                 WITHDRAWAL_MAX
             );
-
-            uint256 protocolWithdrawalFeeAmount = wantBal
-                .mul(protocolWithdrawalFee)
-                .div(WITHDRAWAL_MAX);
-
             wantBal = wantBal.sub(withdrawalFeeAmount);
 
             // Subtract protocol portion and send to treasury
+            uint256 protocolWithdrawalFeeAmount = wantBal
+                .mul(protocolWithdrawalFee)
+                .div(MAX_FEE);
+
             wantBal = wantBal.sub(protocolWithdrawalFeeAmount);
             IERC20(want).safeTransfer(
                 protocolFeeRecipient,
@@ -224,9 +223,10 @@ contract StrategySharesLP is StratManager, FeeManager {
             );
         }
 
+        // Vault will complete process for user withdraw as needed
         IERC20(want).safeTransfer(vault, wantBal);
 
-        emit Withdraw(balanceOf());
+        emit Withdraw(msg.sender, balanceOf());
     }
 
     function beforeDeposit() external override {
@@ -485,21 +485,35 @@ contract StrategySharesLP is StratManager, FeeManager {
 
     // =================== PROTOCOL ITEMS ======================= //
 
+    /// @dev Takes the current `burnFee` from rewards and swaps to burnToken,
+    /// using the burn address as the recipient of the swap.
+    function _doBuybackAndBurn() private {
+        uint256 nativeBal = IERC20(native).balanceOf(address(this));
+
+        uint256 burnAmount = nativeBal.mul(burnFee).div(MAX_FEE);
+
+        uint256[] memory amounts = IUniswapRouterETH(unirouter)
+            .swapExactTokensForTokens(
+                burnAmount,
+                0,
+                nativeToBuybackRoute,
+                BURN_ADDRESS,
+                now
+            );
+
+        emit BuyBackAndBurn(amounts[amounts.length - 1]);
+    }
+
     /**
-     * @dev Swaps half of remaining fee balance and transfers to treasury.
-     * Remaining balance is left for adding liquidity for the treasury.
+     * @dev Deducts protocol fee from rewards and transfers to treasury.
      */
     function _handleTreasuryFee() private {
         uint256 nativeBal = IERC20(native).balanceOf(address(this));
         uint256 protocolFeeAmount = nativeBal.mul(protocolFee).div(MAX_FEE);
 
-        // Split remaing native amount between treasury and providing LP
-        uint256 treasuryHalf = protocolFeeAmount.div(2);
+        IERC20(native).safeTransfer(protocolFeeRecipient, protocolFeeAmount);
 
-        // Trusted external call
-        IERC20(native).safeTransfer(protocolFeeRecipient, treasuryHalf);
-
-        emit TreasuryFeeTransfer(treasuryHalf);
+        emit TreasuryFeeTransfer(protocolFeeAmount);
     }
 
     /**
@@ -551,23 +565,6 @@ contract StrategySharesLP is StratManager, FeeManager {
         emit ProtocolLiquidity(amountA, amountB, liquidity);
     }
 
-    function _doBuybackAndBurn() private {
-        uint256 nativeBal = IERC20(native).balanceOf(address(this));
-
-        uint256 burnAmount = nativeBal.mul(burnFee).div(BURN_FEE_DENOMINATOR);
-
-        uint256[] memory amounts = IUniswapRouterETH(unirouter)
-            .swapExactTokensForTokens(
-                burnAmount,
-                0,
-                nativeToBuybackRoute,
-                BURN_ADDRESS,
-                now
-            );
-
-        emit BuyBackAndBurn(amounts[amounts.length - 1]);
-    }
-
     /// @dev Allow updating to a more optimal routing path if needed
     function setProtocolOutputToLp0(address[] memory _path)
         external
@@ -607,8 +604,8 @@ contract StrategySharesLP is StratManager, FeeManager {
         burnTokenAddress = _burnTokenAddress;
 
         require(
-            _nativeToBuybackRoute[0] == output,
-            "_nativeToBuybackRoute[0] != output"
+            _nativeToBuybackRoute[0] == native,
+            "_nativeToBuybackRoute[0] != native"
         );
         require(
             _nativeToBuybackRoute[_nativeToBuybackRoute.length - 1] ==

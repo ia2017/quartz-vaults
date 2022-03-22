@@ -1,10 +1,10 @@
 import { predictAddresses } from "../utils/predictAddresses";
 import { deployStrategySharesLP, deployStrategySharesLpVault } from "../utils/deploy-util";
-import { STRAT_PROTO_AMES_SHARES_BSC } from "./strats/bsc/strat-proto-ames-share";
 import { ethers } from "hardhat";
+import { STRAT_PROTO_SHARES_UST_BSC } from "./strats/bsc/strat-proto-shares-ust";
 
 async function main() {
-  const currentStrat = STRAT_PROTO_AMES_SHARES_BSC;
+  const currentStrat = STRAT_PROTO_SHARES_UST_BSC;
 
   const predictedAddresses = await predictAddresses();
 

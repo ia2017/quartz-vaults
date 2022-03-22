@@ -39,8 +39,10 @@ export interface StratShareLpDeployConfig {
   _outputToLp0Route: string[];
   _outputToLp1Route: string[];
   _protocolLp0Route: string[];
-   _protocolLp1Route: string[];
-   _protocolPairAddress: string;
+  _protocolLp1Route: string[];
+  _protocolPairAddress: string;
+  _burnTokenAddress: string;
+  _nativeToBuybackRoute: string[];
 }
 
 export interface StratSingleStakeConfig {
@@ -246,7 +248,9 @@ export const deployStrategySharesLP = async (
     stratArgs._outputToLp1Route,
     stratArgs._protocolLp0Route,
     stratArgs._protocolLp1Route,
-    stratArgs._protocolPairAddress
+    stratArgs._protocolPairAddress,
+    stratArgs._burnTokenAddress,
+    stratArgs._nativeToBuybackRoute
   );
 
   await strategy.deployed();

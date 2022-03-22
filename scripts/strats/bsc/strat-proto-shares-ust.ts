@@ -37,13 +37,14 @@ export const constructorArgs: StratShareLpDeployConfig = {
   _outputToNativeRoute,
   _outputToLp0Route,
   _outputToLp1Route,
-  _protocolLp0Route: [],
-  _protocolLp1Route: [],
+  _protocolLp0Route: [TOKENS.ASHARE.BSC, TOKENS.UST.BSC],
+  _protocolLp1Route: [TOKENS.ASHARE.BSC, TOKENS.UST.BSC, TOKENS.AMETHYST.BSC],
   _protocolPairAddress: PAIR_AMETHYST_UST_ADDRESS,
-  _protocolLpPoolId: 0
+  _burnTokenAddress: TOKENS.AMETHYST.BSC,
+  _nativeToBuybackRoute: [TOKENS.UST.BSC, TOKENS.AMETHYST.BSC]
 };
 
-export const STRAT_SHARES_BSC = {
+export const STRAT_PROTO_SHARES_UST_BSC = {
   nameToken0,
   nameToken1,
   constructorArgs,
