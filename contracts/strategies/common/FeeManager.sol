@@ -12,12 +12,18 @@ abstract contract FeeManager is StratManager {
     uint256 public constant WITHDRAWAL_FEE_CAP = 50;
     uint256 public constant WITHDRAWAL_MAX = 10000;
 
-    // 100 / 10000 = 1% max
-    uint256 public constant PROTOCOL_WITHDRAWAL_FEE_CAP = 100;
+    uint256 public burnFee = 20;
+
+    uint256 public constant BURN_FEE_DENOMINATOR = 100;
+
+    uint256 public constant MAX_BURN_FEE_ = 50;
 
     // Used to convert into Protocol Owned Liquidity.
     // 1% default and max value. 100 / WITHDRAWAL_MAX = 1%
     uint256 public protocolWithdrawalFee = 100;
+
+    // 100 / 10000 = 1% max
+    uint256 public constant PROTOCOL_WITHDRAWAL_FEE_CAP = 100;
 
     // Fee taken when a user withdraws to increase base value
     // for remaining remaining depositors.
@@ -34,6 +40,7 @@ abstract contract FeeManager is StratManager {
         uint256 indexed previousFee,
         uint256 indexed newFee
     );
+    event BurnFeeUpdate(uint256 indexed previousFee, uint256 indexed newFee);
 
     function setCallFee(uint256 _fee) public onlyManager {
         require(_fee <= MAX_CALL_FEE, "!cap");
@@ -58,5 +65,14 @@ abstract contract FeeManager is StratManager {
         uint256 previousFee = protocolWithdrawalFee;
         protocolWithdrawalFee = _fee;
         emit ProtocolWithdrawFeeUpdate(previousFee, _fee);
+    }
+
+    /// @dev Set the burn fee.
+    function setBurnFee(uint256 _burnFee) public onlyManager {
+        require(_burnFee <= MAX_BURN_FEE_, "!Burn fee cap");
+
+        uint256 previousFee = burnFee;
+        burnFee = _burnFee;
+        emit BurnFeeUpdate(previousFee, _burnFee);
     }
 }

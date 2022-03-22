@@ -5,6 +5,7 @@ import { deployMockContract } from '@ethereum-waffle/mock-contract';
 import { MockChef, MockRouter, SharesVault } from "../typechain";
 import mockChefInfo from "../artifacts/contracts/mocks/MockChef.sol/MockChef.json"
 import mockRouterInfo from "../artifacts/contracts/mocks/MockRouter.sol/MockRouter.json"
+import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 
 
 describe('SharesVault', () => {
@@ -17,22 +18,22 @@ describe('SharesVault', () => {
 	let dailyDepositLimit = 1;
 
 	let provider: MockProvider;
-	let accounts: Wallet[];
+	let accounts: SignerWithAddress[];
 
 	let mockRouter: MockRouter
 	let mockChef: MockChef;
 
-	let user;
+	let user: SignerWithAddress;
 	
 	beforeEach(async () => {
-		provider = new MockProvider();
-		accounts = provider.getWallets();
+		//provider = new MockProvider();
+		accounts = await ethers.getSigners()
 		user = accounts[0]
 
-		mockChef = await deployMockContract(user.address, mockChefInfo.abi) as unknown as MockChef
-		mockRouter = await deployMockContract(user.address, mockRouterInfo.abi) as unknown as MockRouter
+		mockChef = await deployMockContract(user, mockChefInfo.abi) as unknown as MockChef
+		mockRouter = await deployMockContract(user, mockRouterInfo.abi) as unknown as MockRouter
 
-		const Vault = await ethers.getContractFactory("SharesVault");
+		const Vault = await ethers.getContractFactory("SharesVault", user);
 		const deploying = await Vault.deploy(
 				strategy,
 				name,
@@ -41,9 +42,11 @@ describe('SharesVault', () => {
 				dailyDepositLimit
 		);
 		vault = await deploying.deployed();
+
+		console.log(user.address)
 	});
 
-	it('should do things', () => {
-		
+	it('should accept deposits', async () => {
+		//await vault.checkDepositLimits(1)
 	});
 });

@@ -43,7 +43,7 @@ contract StrategySharesLP is StratManager, FeeManager {
     // AMES-UST
     address public protocolPairAddress;
 
-    uint256 public protocolLpPoolId;
+    address public burnTokenAddress;
 
     // Token0 in main pair
     address public protocolLpToken0;
@@ -57,6 +57,12 @@ contract StrategySharesLP is StratManager, FeeManager {
     // Routing path from output to Token1 in main pair
     address[] public protocolLp1Route;
 
+    // Route use for buyback
+    address[] public nativeToBuybackRoute;
+
+    address public constant BURN_ADDRESS =
+        0x0000000000000000000000000000000000000000;
+
     event ProtocolLiquidity(
         uint256 indexed amountA,
         uint256 indexed amountB,
@@ -66,6 +72,8 @@ contract StrategySharesLP is StratManager, FeeManager {
     event ProtocolLiquidityDeposit(uint256 indexed amount);
 
     event TreasuryTransfer(uint256 indexed amount);
+
+    event BuyBackAndBurn(uint256 indexed amount);
 
     // ===== GENERAL EVENTS ===== //
 
@@ -92,7 +100,8 @@ contract StrategySharesLP is StratManager, FeeManager {
         address[] memory _protocolLp0Route,
         address[] memory _protocolLp1Route,
         address _protocolPairAddress,
-        uint256 _protocolLpPoolId
+        address _burnTokenAddress,
+        address[] memory _nativeToBuybackRoute
     )
         public
         StratManager(
@@ -117,7 +126,6 @@ contract StrategySharesLP is StratManager, FeeManager {
             _outputToLp0Route[0] == output,
             "outputToLp0Route[0] != output"
         );
-
         require(
             _outputToLp0Route[_outputToLp0Route.length - 1] == lpToken0,
             "outputToLp0Route[last] != lpToken0"
@@ -129,7 +137,6 @@ contract StrategySharesLP is StratManager, FeeManager {
             _outputToLp1Route[0] == output,
             "outputToLp1Route[0] != output"
         );
-
         require(
             _outputToLp1Route[_outputToLp1Route.length - 1] == lpToken1,
             "outputToLp1Route[last] != lpToken1"
@@ -143,7 +150,6 @@ contract StrategySharesLP is StratManager, FeeManager {
         require(_protocolPairAddress != address(0), "!_protocolPairAddress");
 
         protocolPairAddress = _protocolPairAddress;
-        protocolLpPoolId = _protocolLpPoolId;
 
         protocolLpToken0 = IUniswapV2Pair(protocolPairAddress).token0();
         require(
@@ -158,6 +164,20 @@ contract StrategySharesLP is StratManager, FeeManager {
             "_protocolLp1Route[last] != protocolLpToken0"
         );
         protocolLp1Route = _protocolLp1Route;
+
+        require(_burnTokenAddress != address(0), "!_burnTokenAddress");
+        burnTokenAddress = _burnTokenAddress;
+
+        require(
+            _nativeToBuybackRoute[0] == output,
+            "_nativeToBuybackRoute[0] != output"
+        );
+        require(
+            _nativeToBuybackRoute[_nativeToBuybackRoute.length - 1] ==
+                burnTokenAddress,
+            "_nativeToBuybackRoute[last] != burnTokenAddress"
+        );
+        nativeToBuybackRoute = _nativeToBuybackRoute;
 
         _giveAllowances();
     }
@@ -274,6 +294,7 @@ contract StrategySharesLP is StratManager, FeeManager {
         IERC20(native).safeTransfer(strategist, strategistFee);
 
         // Handle protocol items
+        _doBuybackAndBurn();
         _handleTreasuryFee();
         _addProtocolLiquidity();
     }
@@ -532,6 +553,23 @@ contract StrategySharesLP is StratManager, FeeManager {
         emit ProtocolLiquidity(amountA, amountB, liquidity);
     }
 
+    function _doBuybackAndBurn() private {
+        uint256 nativeBal = IERC20(native).balanceOf(address(this));
+
+        uint256 burnAmount = nativeBal.mul(burnFee).div(BURN_FEE_DENOMINATOR);
+
+        uint256[] memory amounts = IUniswapRouterETH(unirouter)
+            .swapExactTokensForTokens(
+                burnAmount,
+                0,
+                nativeToBuybackRoute,
+                BURN_ADDRESS,
+                now
+            );
+
+        emit BuyBackAndBurn(amounts[amounts.length - 1]);
+    }
+
     /// @dev Allow updating to a more optimal routing path if needed
     function setProtocolOutputToLp0(address[] memory _path)
         external
@@ -560,5 +598,25 @@ contract StrategySharesLP is StratManager, FeeManager {
         );
 
         protocolLp1Route = _path;
+    }
+
+    /// @dev Option to set burn token to share token if wanted/needed at some point
+    function setBurnToken(
+        address _burnTokenAddress,
+        address[] calldata _nativeToBuybackRoute
+    ) external onlyManager {
+        require(_burnTokenAddress != address(0), "!_burnTokenAddress");
+        burnTokenAddress = _burnTokenAddress;
+
+        require(
+            _nativeToBuybackRoute[0] == output,
+            "_nativeToBuybackRoute[0] != output"
+        );
+        require(
+            _nativeToBuybackRoute[_nativeToBuybackRoute.length - 1] ==
+                burnTokenAddress,
+            "_nativeToBuybackRoute[last] != burnTokenAddress"
+        );
+        nativeToBuybackRoute = _nativeToBuybackRoute;
     }
 }

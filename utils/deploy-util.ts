@@ -1,3 +1,4 @@
+import { BigNumberish } from "ethers";
 import { ethers } from "hardhat";
 import { QuartzVault } from "../typechain";
 import { predictAddresses } from "./predictAddresses";
@@ -40,7 +41,6 @@ export interface StratShareLpDeployConfig {
   _protocolLp0Route: string[];
    _protocolLp1Route: string[];
    _protocolPairAddress: string;
-  _protocolLpPoolId: number;
 }
 
 export interface StratSingleStakeConfig {
@@ -66,8 +66,8 @@ export const deployCommonVault = async (
   const Vault = await ethers.getContractFactory("QuartzVault");
   const vaultArgs = {
     strategyAddress,
-    tokenName: `Quartz ${nameToken0}-${nameToken1} Vault LP`,
-    tokenSymbol: `qtz${nameToken0}-${nameToken1}-VLP`,
+    tokenName: `AMES ${nameToken0}-${nameToken1} Vault LP`,
+    tokenSymbol: `ames${nameToken0}-${nameToken1}-VLP`,
     approvalDelay: 10,
   };
   const vault = await Vault.deploy(
@@ -88,22 +88,25 @@ export const deployCommonVault = async (
 export const deployStrategySharesLpVault = async (
   strategyAddress: string,
   nameToken0: string,
-  nameToken1: string
+  nameToken1: string,
+  depositLimit: BigNumberish
 ) => {
   const predictedAddresses = await predictAddresses();
 
-  const Vault = await ethers.getContractFactory("QuartzVault");
+  const Vault = await ethers.getContractFactory("SharesVault");
   const vaultArgs = {
     strategyAddress,
-    tokenName: `Quartz ${nameToken0}-${nameToken1} Vault LP`,
-    tokenSymbol: `qtz${nameToken0}-${nameToken1}-VLP`,
+    tokenName: `AMES ${nameToken0}-${nameToken1} Vault LP`,
+    tokenSymbol: `ames${nameToken0}-${nameToken1}-VLP`,
     approvalDelay: 10,
   };
   const vault = await Vault.deploy(
     vaultArgs.strategyAddress,
     vaultArgs.tokenName,
     vaultArgs.tokenSymbol,
-    vaultArgs.approvalDelay
+    vaultArgs.approvalDelay,
+    depositLimit
+
   );
   await vault.deployed();
   console.log("QuartzVault deployed to:", vault.address);
@@ -124,8 +127,8 @@ export const deploySingleStakeVault = async (
   const Vault = await ethers.getContractFactory("QuartzVault");
   const vaultArgs = {
     strategyAddress,
-    tokenName: `Quartz ${tokenName} Vault LP`,
-    tokenSymbol: `qtz${tokenName}-VLP`,
+    tokenName: `AMES ${tokenName} Vault LP`,
+    tokenSymbol: `ames${tokenName}-VLP`,
     approvalDelay: 10,
   };
   const vault = await Vault.deploy(
@@ -243,8 +246,7 @@ export const deployStrategySharesLP = async (
     stratArgs._outputToLp1Route,
     stratArgs._protocolLp0Route,
     stratArgs._protocolLp1Route,
-    stratArgs._protocolPairAddress,
-    stratArgs._protocolLpPoolId,
+    stratArgs._protocolPairAddress
   );
 
   await strategy.deployed();

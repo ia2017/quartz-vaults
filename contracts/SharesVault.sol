@@ -145,16 +145,19 @@ contract SharesVault is ERC20, Ownable, ReentrancyGuard {
         _mint(msg.sender, shares);
     }
 
-    function _checkDepositLimits(uint256 _amountIn) private {
+    function _updateDepositTime() private {
         uint256 timeElapsed = block.timestamp -
             currentDailyDeposits.timeLastSet;
 
         // Reset counter for new day
         if (timeElapsed > DEPOSIT_UPDATE_INTERVAL) {
-            currentDailyDeposits.timeLastSet = block.timestamp;
             currentDailyDeposits.currentDepositTotal = 0;
         }
+        currentDailyDeposits.timeLastSet = block.timestamp;
+    }
 
+    function _checkDepositLimits(uint256 _amountIn) private {
+        _updateDepositTime();
         uint256 newDepositsForDay = currentDailyDeposits
             .currentDepositTotal
             .add(_amountIn);
@@ -189,22 +192,38 @@ contract SharesVault is ERC20, Ownable, ReentrancyGuard {
      * from the strategy and pay up the token holder. A proportional number of IOU
      * tokens are burned in the process.
      */
-    function withdraw(uint256 _shares) public {
-        uint256 r = (balance().mul(_shares)).div(totalSupply());
-        _burn(msg.sender, _shares);
+    function withdraw(uint256 _amountSharesOut) public {
+        uint256 requestedWithdrawAmount = (balance().mul(_amountSharesOut)).div(
+            totalSupply()
+        );
+        _burn(msg.sender, _amountSharesOut);
 
-        uint256 b = want().balanceOf(address(this));
-        if (b < r) {
-            uint256 _withdraw = r.sub(b);
-            strategy.withdraw(_withdraw);
-            uint256 _after = want().balanceOf(address(this));
-            uint256 _diff = _after.sub(b);
-            if (_diff < _withdraw) {
-                r = b.add(_diff);
+        uint256 currentBalance = want().balanceOf(address(this));
+
+        // Then check strat for funds to pull into vault
+        if (currentBalance < requestedWithdrawAmount) {
+            uint256 withdrawAmount = requestedWithdrawAmount.sub(
+                currentBalance
+            );
+            strategy.withdraw(withdrawAmount);
+            // Withdraw fees can be taken in strategies
+            // So adjust total returned to caller as needed
+            uint256 balanceAfterStratWithdraw = want().balanceOf(address(this));
+            uint256 vaultStratBalanceDiff = balanceAfterStratWithdraw.sub(
+                currentBalance
+            );
+            if (vaultStratBalanceDiff < withdrawAmount) {
+                requestedWithdrawAmount = currentBalance.add(
+                    vaultStratBalanceDiff
+                );
             }
         }
+        _updateDepositTime();
+        currentDailyDeposits.currentDepositTotal = currentDailyDeposits
+            .currentDepositTotal
+            .sub(_amountSharesOut);
 
-        want().safeTransfer(msg.sender, r);
+        want().safeTransfer(msg.sender, requestedWithdrawAmount);
     }
 
     /**
