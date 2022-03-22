@@ -61,7 +61,7 @@ contract StrategySharesLP is StratManager, FeeManager {
     address[] public nativeToBuybackRoute;
 
     address public constant BURN_ADDRESS =
-        0x0000000000000000000000000000000000000000;
+        0x000000000000000000000000000000000000dEaD;
 
     event ProtocolLiquidity(
         uint256 indexed amountA,
@@ -153,12 +153,20 @@ contract StrategySharesLP is StratManager, FeeManager {
             _protocolLp0Route[_protocolLp0Route.length - 1] == protocolLpToken0,
             "_protocolLp0Route[last] != protocolLpToken0"
         );
+        require(
+            _protocolLp0Route[0] == native,
+            "_protocolLp0Route[last] != native"
+        );
         protocolLp0Route = _protocolLp0Route;
 
         protocolLpToken1 = IUniswapV2Pair(protocolPairAddress).token1();
         require(
             _protocolLp1Route[_protocolLp1Route.length - 1] == protocolLpToken1,
             "_protocolLp1Route[last] != protocolLpToken0"
+        );
+        require(
+            _protocolLp1Route[0] == native,
+            "_protocolLp1Route[last] != native"
         );
         protocolLp1Route = _protocolLp1Route;
 
@@ -264,8 +272,9 @@ contract StrategySharesLP is StratManager, FeeManager {
     /// @dev Used to charge fees on harvested rewards before executing the compounding process.
     function chargeFees(address callFeeRecipient) internal {
         // 6% base fee
-        // - 2% to Treasury
-        // - 2% AMES-UST LP (treasury owned)
+        // After call and strategist fees a 3 way split for:
+        // - Treasury
+        // - AMES-UST LP (treasury owned)
         // - 2% Buy and burn AMES
 
         uint256 rewardTokenBalance = IERC20(output)
@@ -282,18 +291,26 @@ contract StrategySharesLP is StratManager, FeeManager {
             now
         );
 
-        uint256 nativeBal = IERC20(native).balanceOf(address(this));
+        // uint256 nativeBal = IERC20(native).balanceOf(address(this));
 
-        uint256 callFeeAmount = nativeBal.mul(callFee).div(MAX_FEE);
-        IERC20(native).safeTransfer(callFeeRecipient, callFeeAmount);
+        // uint256 callFeeAmount = nativeBal.mul(callFee).div(MAX_FEE);
+        // IERC20(native).safeTransfer(callFeeRecipient, callFeeAmount);
 
-        uint256 strategistFee = nativeBal.mul(STRATEGIST_FEE).div(MAX_FEE);
-        IERC20(native).safeTransfer(strategist, strategistFee);
+        // uint256 strategistFee = nativeBal.mul(STRATEGIST_FEE).div(MAX_FEE);
+        // IERC20(native).safeTransfer(strategist, strategistFee);
 
-        // Handle protocol items
-        _doBuybackAndBurn();
-        _handleTreasuryFee();
-        _addProtocolLiquidity();
+        //  Handle protocol items
+
+        // Remaining gets evenly distributed to the 3 protocol support items
+        // nativeBal = IERC20(native).balanceOf(address(this));
+        // IERC20(native).safeTransfer(protocolFeeRecipient, nativeBal.div(3));
+
+        // nativeBal = IERC20(native).balanceOf(address(this));
+        // _addProtocolLiquidity(nativeBal.div(2));
+
+        // Send whatever remaining balance to get swapped to furnance
+        // nativeBal = IERC20(native).balanceOf(address(this));
+        _doBuybackAndBurn(IERC20(native).balanceOf(address(this)));
     }
 
     // Adds liquidity to AMM and gets more LP tokens.
@@ -439,8 +456,19 @@ contract StrategySharesLP is StratManager, FeeManager {
         // Protocol token approvals
         IERC20(protocolLpToken0).safeApprove(unirouter, 0);
         IERC20(protocolLpToken0).safeApprove(unirouter, uint256(-1));
+
         IERC20(protocolLpToken1).safeApprove(unirouter, 0);
         IERC20(protocolLpToken1).safeApprove(unirouter, uint256(-1));
+
+        // Need to approve the pair to access contracts protocol LP pair tokens
+        IERC20(protocolLpToken0).safeApprove(protocolPairAddress, uint256(-1));
+        IERC20(protocolLpToken1).safeApprove(protocolPairAddress, uint256(-1));
+
+        IERC20(native).safeApprove(unirouter, 0);
+        IERC20(native).safeApprove(unirouter, uint256(-1));
+
+        IERC20(protocolPairAddress).safeApprove(unirouter, 0);
+        IERC20(protocolPairAddress).safeApprove(unirouter, uint256(-1));
     }
 
     function _removeAllowances() internal {
@@ -451,6 +479,8 @@ contract StrategySharesLP is StratManager, FeeManager {
 
         IERC20(protocolLpToken0).safeApprove(unirouter, 0);
         IERC20(protocolLpToken1).safeApprove(unirouter, 0);
+        IERC20(protocolPairAddress).safeApprove(unirouter, 0);
+        IERC20(native).safeApprove(unirouter, 0);
     }
 
     function outputToNative() external view returns (address[] memory) {
@@ -467,7 +497,6 @@ contract StrategySharesLP is StratManager, FeeManager {
 
     /// @dev Allow updating to a more optimal routing path if needed
     function setOutputToLp0(address[] memory _path) external onlyManager {
-        require(_path.length >= 2, "!path");
         require(_path[0] == output, "outputToLp0Route[0] != output");
         require(_path[_path.length - 1] == lpToken0, "!path to lpToken0");
 
@@ -476,7 +505,6 @@ contract StrategySharesLP is StratManager, FeeManager {
 
     /// @dev Allow updating to a more optimal routing path if needed
     function setOutputToLp1(address[] memory _path) external onlyManager {
-        require(_path.length >= 2, "!path");
         require(_path[0] == output, "outputToLp1Route[0] != output");
         require(_path[_path.length - 1] == lpToken1, "!path to lpToken1");
 
@@ -485,54 +513,40 @@ contract StrategySharesLP is StratManager, FeeManager {
 
     /// @dev Allow updating to a more optimal routing path if needed
     function setOutputToNative(address[] memory _path) external onlyManager {
-        require(_path.length >= 2, "!path");
         require(_path[0] == output, "outputToNativeRoute[0] != output");
 
         outputToNativeRoute = _path;
     }
 
-    // =================== PROTOCOL ITEMS ======================= //
+    // ============================= PROTOCOL ITEMS ================================ //
 
     /// @dev Takes the current `burnFee` from rewards and swaps to burnToken,
     /// using the burn address as the recipient of the swap.
-    function _doBuybackAndBurn() private {
-        uint256 nativeBal = IERC20(native).balanceOf(address(this));
-
-        uint256 burnAmount = nativeBal.mul(burnFee).div(MAX_FEE);
-
-        uint256[] memory amounts = IUniswapRouterETH(unirouter)
+    function _doBuybackAndBurn(uint256 _amountNativeIn) private {
+        IUniswapRouterETH(unirouter)
             .swapExactTokensForTokens(
-                burnAmount,
+                _amountNativeIn,
                 0,
                 nativeToBuybackRoute,
-                BURN_ADDRESS,
+                address(this),
                 now
             );
 
-        emit BuyBackAndBurn(amounts[amounts.length - 1]);
-    }
+        uint256 burnAmount = IERC20(burnTokenAddress).balanceOf(address(this));
+        IERC20(burnTokenAddress).safeTransfer(BURN_ADDRESS, burnAmount);
 
-    /**
-     * @dev Deducts protocol fee from rewards and transfers to treasury.
-     */
-    function _handleTreasuryFee() private {
-        uint256 nativeBal = IERC20(native).balanceOf(address(this));
-        uint256 protocolFeeAmount = nativeBal.mul(protocolFee).div(MAX_FEE);
-
-        IERC20(native).safeTransfer(protocolFeeRecipient, protocolFeeAmount);
-
-        emit TreasuryFeeTransfer(protocolFeeAmount);
+        emit BuyBackAndBurn(burnAmount);
     }
 
     /**
      * @dev Uses funds from fees and adds liquidity to core protocol LP pool.
      * LP tokens are transferred to the treasury as Protocol Owned Liquidity.
-     * Should be called after `_handleTreasuryFee` to use the last of any remaining balance.
+     * @param _amountNativeToSlpit amount of native that will be div by 2 for LP
      */
-    function _addProtocolLiquidity() private {
-        uint256 nativeHalf = IERC20(native).balanceOf(address(this)).div(2);
+    function _addProtocolLiquidity(uint256 _amountNativeToSlpit) private {
+        uint256 nativeHalf = _amountNativeToSlpit.div(2);
 
-        if (protocolLpToken0 != output) {
+        if (protocolLpToken0 != native) {
             IUniswapRouterETH(unirouter).swapExactTokensForTokens(
                 nativeHalf,
                 0,
@@ -542,7 +556,7 @@ contract StrategySharesLP is StratManager, FeeManager {
             );
         }
 
-        if (protocolLpToken1 != output) {
+        if (protocolLpToken1 != native) {
             IUniswapRouterETH(unirouter).swapExactTokensForTokens(
                 nativeHalf,
                 0,
@@ -579,8 +593,7 @@ contract StrategySharesLP is StratManager, FeeManager {
         external
         onlyManager
     {
-        require(_path.length >= 2, "!path");
-        require(_path[0] == output, "protocolLp0Route[0] != output");
+        require(_path[0] == native, "protocolLp0Route[0] != native");
         require(
             _path[_path.length - 1] == protocolLpToken0,
             "!path to protocolLpToken0"
@@ -594,8 +607,7 @@ contract StrategySharesLP is StratManager, FeeManager {
         external
         onlyManager
     {
-        require(_path.length >= 2, "!path");
-        require(_path[0] == output, "protocolLp1Route[0] != output");
+        require(_path[0] == native, "protocolLp1Route[0] != native");
         require(
             _path[_path.length - 1] == protocolLpToken1,
             "!path to protocolLpToken1"
@@ -610,17 +622,25 @@ contract StrategySharesLP is StratManager, FeeManager {
         address[] calldata _nativeToBuybackRoute
     ) external onlyManager {
         require(_burnTokenAddress != address(0), "!_burnTokenAddress");
-        burnTokenAddress = _burnTokenAddress;
-
         require(
             _nativeToBuybackRoute[0] == native,
             "_nativeToBuybackRoute[0] != native"
         );
         require(
             _nativeToBuybackRoute[_nativeToBuybackRoute.length - 1] ==
-                burnTokenAddress,
+                _burnTokenAddress,
             "_nativeToBuybackRoute[last] != burnTokenAddress"
         );
+
+        burnTokenAddress = _burnTokenAddress;
         nativeToBuybackRoute = _nativeToBuybackRoute;
+    }
+
+    function transferToTreasury() external onlyManager {
+        uint256 nativeBalance = IERC20(native).balanceOf(address(this));
+
+        if (nativeBalance > 0) {
+            IERC20(native).safeTransfer(protocolFeeRecipient, nativeBalance);
+        }
     }
 }

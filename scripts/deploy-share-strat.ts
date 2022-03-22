@@ -8,8 +8,8 @@ async function main() {
 
   const predictedAddresses = await predictAddresses('0x2e86D29cFea7c4f422f7fCCF97986bbBa03e1a7F');
 
-  const DEFAULT_DEPOSIT_LIMIT = ethers.utils.parseEther('1000');
-  const USER_DEPOSIT_LIMIT = ethers.utils.parseEther('100');
+  const DEFAULT_DEPOSIT_LIMIT = ethers.utils.parseEther('1500');
+  const USER_DEPOSIT_LIMIT = ethers.utils.parseEther('150');
 
   const vault = await deploySharesLpVault(
     '0x2e86D29cFea7c4f422f7fCCF97986bbBa03e1a7F',
