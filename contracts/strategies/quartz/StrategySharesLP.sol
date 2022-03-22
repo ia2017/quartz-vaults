@@ -274,8 +274,8 @@ contract StrategySharesLP is StratManager, FeeManager {
         // 6% base fee
         // After call and strategist fees a 3 way split for:
         // - Treasury
-        // - AMES-UST LP (treasury owned)
-        // - 2% Buy and burn AMES
+        // - AMES-UST LP (protocol owned)
+        // - Buy and burn AMES
 
         uint256 rewardTokenBalance = IERC20(output)
             .balanceOf(address(this))
@@ -291,22 +291,26 @@ contract StrategySharesLP is StratManager, FeeManager {
             now
         );
 
-        // uint256 nativeBal = IERC20(native).balanceOf(address(this));
+        uint256 nativeBal = IERC20(native).balanceOf(address(this));
 
-        // uint256 callFeeAmount = nativeBal.mul(callFee).div(MAX_FEE);
-        // IERC20(native).safeTransfer(callFeeRecipient, callFeeAmount);
+        uint256 callFeeAmount = nativeBal.mul(callFee).div(MAX_FEE);
+        IERC20(native).safeTransfer(callFeeRecipient, callFeeAmount);
 
-        // uint256 strategistFee = nativeBal.mul(STRATEGIST_FEE).div(MAX_FEE);
-        // IERC20(native).safeTransfer(strategist, strategistFee);
+        uint256 strategistFee = nativeBal.mul(STRATEGIST_FEE).div(MAX_FEE);
+        IERC20(native).safeTransfer(strategist, strategistFee);
 
         //  Handle protocol items
 
         // Remaining gets evenly distributed to the 3 protocol support items
-        // nativeBal = IERC20(native).balanceOf(address(this));
-        // IERC20(native).safeTransfer(protocolFeeRecipient, nativeBal.div(3));
+        nativeBal = IERC20(native).balanceOf(address(this));
 
-        // nativeBal = IERC20(native).balanceOf(address(this));
-        // _addProtocolLiquidity(nativeBal.div(2));
+        // 1/3 of remaining as standard transfer of stables to treasury
+        IERC20(native).safeTransfer(protocolFeeRecipient, nativeBal.div(3));
+
+        // Add Protocol Owned Liquidity
+        nativeBal = IERC20(native).balanceOf(address(this));
+        // Half of remaining, leaving rest for buyback and burn
+        _addProtocolLiquidity(nativeBal.div(2));
 
         // Send whatever remaining balance to get swapped to furnance
         // nativeBal = IERC20(native).balanceOf(address(this));
