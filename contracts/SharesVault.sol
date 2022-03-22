@@ -23,15 +23,6 @@ contract SharesVault is ERC20, Ownable, ReentrancyGuard {
         uint256 proposedTime;
     }
 
-    // struct DepositTracking {
-    //     uint256 timeLastSet;
-    //     uint256 currentDepositTotal;
-    // }
-
-    // uint256 public constant DEPOSIT_UPDATE_INTERVAL = 1 days;
-
-    //  DepositTracking public currentDailyDeposits;
-
     uint256 public dailyDepositLimit;
 
     uint256 public userDepositLimit;
@@ -71,7 +62,6 @@ contract SharesVault is ERC20, Ownable, ReentrancyGuard {
 
         strategy = _strategy;
         approvalDelay = _approvalDelay;
-        //currentDailyDeposits = DepositTracking(block.timestamp, 0);
         dailyDepositLimit = _dailyDepositLimit;
         userDepositLimit = _userDepositLimit;
     }
@@ -123,28 +113,7 @@ contract SharesVault is ERC20, Ownable, ReentrancyGuard {
      * into the vault. The vault is then in charge of sending funds into the strategy.
      */
     function deposit(uint256 _amount) public nonReentrant {
-        if (depositLimitsEnabled) {
-            uint256 userDeposits = balanceOf(msg.sender);
-            if (userDeposits > 0) {
-                uint256 wouldBeTotalDeposits = userDeposits.add(_amount);
-                //require(userDeposits < userDepositLimit, "Exceeds user deposit limit");
-                require(
-                    wouldBeTotalDeposits < userDepositLimit,
-                    "Exceeds user deposit limit"
-                );
-                require(
-                    balance().add(wouldBeTotalDeposits) < dailyDepositLimit,
-                    "Exceeds current total deposit limit"
-                );
-            } else {
-                require(
-                    balance().add(_amount) < dailyDepositLimit,
-                    "Exceeds current total deposit limit"
-                );
-            }
-        }
-
-        // _checkDepositLimits(_amount);
+        _checkDepositLimits(_amount);
 
         // Get current total holdings amount (vault and strat)
         uint256 totalDepositBalance = balance();
@@ -173,30 +142,27 @@ contract SharesVault is ERC20, Ownable, ReentrancyGuard {
         _mint(msg.sender, shares);
     }
 
-    // function _updateDepositTime() private {
-    //     uint256 timeElapsed = block.timestamp -
-    //         currentDailyDeposits.timeLastSet;
-
-    //     // Reset counter for new day
-    //     if (timeElapsed > DEPOSIT_UPDATE_INTERVAL) {
-    //         currentDailyDeposits.currentDepositTotal = 0;
-    //     }
-    //     currentDailyDeposits.timeLastSet = block.timestamp;
-    // }
-
-    // function _checkDepositLimits(uint256 _amountIn) private {
-    //     _updateDepositTime();
-    //     uint256 newDepositsForDay = currentDailyDeposits
-    //         .currentDepositTotal
-    //         .add(_amountIn);
-    //     require(
-    //         newDepositsForDay < dailyDepositLimit,
-    //         "Exceeds daily deposit limit"
-    //     );
-
-    //     currentDailyDeposits.timeLastSet = block.timestamp;
-    //     currentDailyDeposits.currentDepositTotal = newDepositsForDay;
-    // }
+    function _checkDepositLimits(uint256 _amountIn) private view {
+        if (depositLimitsEnabled) {
+            uint256 userDeposits = balanceOf(msg.sender);
+            if (userDeposits > 0) {
+                uint256 wouldBeTotalDeposits = userDeposits.add(_amountIn);
+                require(
+                    wouldBeTotalDeposits < userDepositLimit,
+                    "Exceeds user deposit limit"
+                );
+                require(
+                    balance().add(wouldBeTotalDeposits) < dailyDepositLimit,
+                    "Exceeds current total deposit limit"
+                );
+            } else {
+                require(
+                    balance().add(_amountIn) < dailyDepositLimit,
+                    "Exceeds current total deposit limit"
+                );
+            }
+        }
+    }
 
     /**
      * @dev Function to send funds into the strategy and put them to work. It's primarily called

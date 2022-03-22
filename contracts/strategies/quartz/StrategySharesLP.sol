@@ -146,7 +146,6 @@ contract StrategySharesLP is StratManager, FeeManager {
          */
 
         require(_protocolPairAddress != address(0), "!_protocolPairAddress");
-
         protocolPairAddress = _protocolPairAddress;
 
         protocolLpToken0 = IUniswapV2Pair(protocolPairAddress).token0();
@@ -436,6 +435,10 @@ contract StrategySharesLP is StratManager, FeeManager {
 
         IERC20(lpToken1).safeApprove(unirouter, 0);
         IERC20(lpToken1).safeApprove(unirouter, uint256(-1));
+
+        // Protocol token approvals
+        IERC20(protocolLpToken0).safeApprove(unirouter, 0);
+        IERC20(protocolLpToken1).safeApprove(unirouter, uint256(-1));
     }
 
     function _removeAllowances() internal {
@@ -443,6 +446,9 @@ contract StrategySharesLP is StratManager, FeeManager {
         IERC20(output).safeApprove(unirouter, 0);
         IERC20(lpToken0).safeApprove(unirouter, 0);
         IERC20(lpToken1).safeApprove(unirouter, 0);
+
+        IERC20(protocolLpToken0).safeApprove(unirouter, 0);
+        IERC20(protocolLpToken1).safeApprove(unirouter, 0);
     }
 
     function outputToNative() external view returns (address[] memory) {
@@ -547,6 +553,7 @@ contract StrategySharesLP is StratManager, FeeManager {
         uint256 lpBal0 = IERC20(protocolLpToken0).balanceOf(address(this));
         uint256 lpBal1 = IERC20(protocolLpToken1).balanceOf(address(this));
 
+        // Send liquidity tokens to treasury then for Protocol Own Liquidity
         (
             uint256 amountA,
             uint256 amountB,
