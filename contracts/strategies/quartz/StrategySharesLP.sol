@@ -69,9 +69,7 @@ contract StrategySharesLP is StratManager, FeeManager {
         uint256 indexed liquidity
     );
 
-    event ProtocolLiquidityDeposit(uint256 indexed amount);
-
-    event TreasuryTransfer(uint256 indexed amount);
+    event TreasuryFeeTransfer(uint256 indexed amount);
 
     event BuyBackAndBurn(uint256 indexed amount);
 
@@ -501,7 +499,7 @@ contract StrategySharesLP is StratManager, FeeManager {
         // Trusted external call
         IERC20(native).safeTransfer(protocolFeeRecipient, treasuryHalf);
 
-        emit TreasuryTransfer(treasuryHalf);
+        emit TreasuryFeeTransfer(treasuryHalf);
     }
 
     /**
