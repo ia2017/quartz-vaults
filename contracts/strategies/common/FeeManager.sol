@@ -19,7 +19,7 @@ abstract contract FeeManager is StratManager {
 
     uint256 public burnFee = 20;
 
-    uint256 public constant MAX_BURN_FEE_ = 50;
+    uint256 public constant MAX_BURN_FEE = 50;
 
     // Used to add to Protocol Owned Liquidity.
     // 1% default
@@ -43,20 +43,26 @@ abstract contract FeeManager is StratManager {
         uint256 indexed newFee
     );
     event BurnFeeUpdate(uint256 indexed previousFee, uint256 indexed newFee);
+     event CallFeeUpdate(uint256 indexed previousFee, uint256 indexed newFee, uint256 indexed protocolFee);
 
+    /// @dev updates the callFee and also the protocolFee as a result
     function setCallFee(uint256 _fee) public onlyManager {
-        require(_fee <= MAX_CALL_FEE, "!cap");
+        require(_fee <= MAX_CALL_FEE, "!Call fee cap");
 
+        uint256 previousFee = callFee;
         callFee = _fee;
         protocolFee = MAX_FEE - STRATEGIST_FEE - callFee;
+
+        emit CallFeeUpdate(previousFee, _fee, protocolFee);
     }
 
-    /// @dev Set the withdrawal fee that remains pooled to accrue value for current depositors.
+    /// @dev Set the withdrawal fee that remains pooled to accrue value for remaining depositors.
     function setWithdrawalFee(uint256 _fee) public onlyManager {
-        require(_fee <= WITHDRAWAL_FEE_CAP, "!cap");
+        require(_fee <= WITHDRAWAL_FEE_CAP, "!Withdraw fee cap");
 
         uint256 previousFee = withdrawalFee;
         withdrawalFee = _fee;
+
         emit WithdrawFeeUpdate(previousFee, _fee);
     }
 
@@ -71,10 +77,11 @@ abstract contract FeeManager is StratManager {
 
     /// @dev Set the burn fee.
     function setBurnFee(uint256 _burnFee) public onlyManager {
-        require(_burnFee <= MAX_BURN_FEE_, "!Burn fee cap");
+        require(_burnFee <= MAX_BURN_FEE, "!Burn fee cap");
 
         uint256 previousFee = burnFee;
         burnFee = _burnFee;
+
         emit BurnFeeUpdate(previousFee, _burnFee);
     }
 }
