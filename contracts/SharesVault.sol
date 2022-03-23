@@ -23,16 +23,21 @@ contract SharesVault is ERC20, Ownable, ReentrancyGuard {
         uint256 proposedTime;
     }
 
-    uint256 public dailyDepositLimit;
+    // Cap on amount of LP tokens that can deposited
+    uint256 public totalDepositLimit;
 
+    // Cap on the amount any account can have deposited
     uint256 public userDepositLimit;
 
+    // Toggle for whether limits are being set on deposits
     bool public depositLimitsEnabled = true;
 
     // The last proposed strategy to switch to.
     StratCandidate public stratCandidate;
+
     // The strategy currently in use by the vault.
     IStrategy public strategy;
+
     // The minimum time it has to pass before a strat candidate can be approved.
     uint256 public immutable approvalDelay;
 
@@ -54,15 +59,16 @@ contract SharesVault is ERC20, Ownable, ReentrancyGuard {
         string memory _name,
         string memory _symbol,
         uint256 _approvalDelay,
-        uint256 _dailyDepositLimit,
+        uint256 _totalDepositLimit,
         uint256 _userDepositLimit
     ) public ERC20(_name, _symbol) {
-        require(_dailyDepositLimit > 0, "!_dailyDepositLimit");
+        // If using this version of a vault then these values should be provided
+        require(_totalDepositLimit > 0, "!_dailyDepositLimit");
         require(_userDepositLimit > 0, "!_userDepositLimit");
 
         strategy = _strategy;
         approvalDelay = _approvalDelay;
-        dailyDepositLimit = _dailyDepositLimit;
+        totalDepositLimit = _totalDepositLimit;
         userDepositLimit = _userDepositLimit;
     }
 
@@ -132,6 +138,7 @@ contract SharesVault is ERC20, Ownable, ReentrancyGuard {
         // Additional check for deflationary tokens
         _amount = _after.sub(totalDepositBalance);
 
+        // Mint the amount vault tokens to the caller according to current deposits in vault
         uint256 shares = 0;
         if (totalSupply() == 0) {
             shares = _amount;
@@ -142,22 +149,30 @@ contract SharesVault is ERC20, Ownable, ReentrancyGuard {
         _mint(msg.sender, shares);
     }
 
+    /**
+     * @dev If `depositLimitsEnabled`,
+     * this function will run the required checks against the input deposit amount.
+     */
     function _checkDepositLimits(uint256 _amountIn) private view {
         if (depositLimitsEnabled) {
             uint256 userDeposits = balanceOf(msg.sender);
             if (userDeposits > 0) {
+                // Current deposit amount + incoming should be under the current cap
                 uint256 wouldBeTotalDeposits = userDeposits.add(_amountIn);
                 require(
                     wouldBeTotalDeposits < userDepositLimit,
                     "Exceeds user deposit limit"
                 );
+
+                // Increase of user balance should not exceed current total cap limit for vault
                 require(
-                    balance().add(wouldBeTotalDeposits) < dailyDepositLimit,
+                    balance().add(wouldBeTotalDeposits) < totalDepositLimit,
                     "Exceeds current total deposit limit"
                 );
             } else {
+                // If new depositor then just check the deposit does not exceed vaults current total cap
                 require(
-                    balance().add(_amountIn) < dailyDepositLimit,
+                    balance().add(_amountIn) < totalDepositLimit,
                     "Exceeds current total deposit limit"
                 );
             }
@@ -165,8 +180,8 @@ contract SharesVault is ERC20, Ownable, ReentrancyGuard {
     }
 
     /**
-     * @dev Function to send funds into the strategy and put them to work. It's primarily called
-     * by the vault's deposit() function.
+     * @dev Function to send funds into the strategy and put them to work.
+     * Primarily called by the vault's deposit() function.
      */
     function earn() public {
         uint256 _bal = available();
@@ -200,22 +215,20 @@ contract SharesVault is ERC20, Ownable, ReentrancyGuard {
                 currentBalance
             );
             strategy.withdraw(withdrawAmount);
+
             // Withdraw fees can be taken in strategies
             // So adjust total returned to caller as needed
             uint256 balanceAfterStratWithdraw = want().balanceOf(address(this));
             uint256 vaultStratBalanceDiff = balanceAfterStratWithdraw.sub(
                 currentBalance
             );
+
             if (vaultStratBalanceDiff < withdrawAmount) {
                 requestedWithdrawAmount = currentBalance.add(
                     vaultStratBalanceDiff
                 );
             }
         }
-        // _updateDepositTime();
-        // currentDailyDeposits.currentDepositTotal = currentDailyDeposits
-        //     .currentDepositTotal
-        //     .sub(_amountSharesOut);
 
         want().safeTransfer(msg.sender, requestedWithdrawAmount);
     }
@@ -274,11 +287,11 @@ contract SharesVault is ERC20, Ownable, ReentrancyGuard {
         IERC20(_token).safeTransfer(msg.sender, amount);
     }
 
-    function setDailyDepositLimit(uint256 _dailyDepositLimit)
+    function setTotalDepositLimit(uint256 _totalDepositLimit)
         external
         onlyOwner
     {
-        dailyDepositLimit = _dailyDepositLimit;
+        totalDepositLimit = _totalDepositLimit;
     }
 
     function setUserDepositLimit(uint256 _userDepositLimit) external onlyOwner {

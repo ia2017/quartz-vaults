@@ -6,17 +6,19 @@ import { STRAT_PROTO_SHARES_UST_BSC } from "./strats/bsc/strat-proto-shares-ust"
 async function main() {
   const currentStrat = STRAT_PROTO_SHARES_UST_BSC;
 
-  const predictedAddresses = await predictAddresses('0x2e86D29cFea7c4f422f7fCCF97986bbBa03e1a7F');
+  const currentStrategist = '0x570108E54d11348BD3734FF73dc55eC52c28d3EF'
 
-  const DEFAULT_DEPOSIT_LIMIT = ethers.utils.parseEther('1500');
-  const USER_DEPOSIT_LIMIT = ethers.utils.parseEther('150');
+  const predictedAddresses = await predictAddresses(currentStrategist);
+
+  const DEFAULT_TOTAL_DEPOSIT_LIMIT = ethers.utils.parseEther('1000');
+  const USER_DEPOSIT_LIMIT = ethers.utils.parseEther('100');
 
   const vault = await deploySharesLpVault(
-    '0x2e86D29cFea7c4f422f7fCCF97986bbBa03e1a7F',
+    currentStrategist,
     predictedAddresses.strategy,
     currentStrat.nameToken0,
     currentStrat.nameToken1,
-    DEFAULT_DEPOSIT_LIMIT,
+    DEFAULT_TOTAL_DEPOSIT_LIMIT,
     USER_DEPOSIT_LIMIT
   );
 
@@ -24,7 +26,6 @@ async function main() {
 
   // Update rewards check function name to match our reward pool/chef name
   const strategy = await deployStrategySharesLP(currentStrat.constructorArgs);
-
   const tx = await strategy.setPendingRewardsFunctionName("pendingShare");
   await tx.wait(1);
 
