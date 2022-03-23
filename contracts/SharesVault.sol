@@ -27,7 +27,7 @@ contract SharesVault is ERC20, Ownable, ReentrancyGuard {
 
     uint256 public userDepositLimit;
 
-    bool depositLimitsEnabled = true;
+    bool public depositLimitsEnabled = true;
 
     // The last proposed strategy to switch to.
     StratCandidate public stratCandidate;
