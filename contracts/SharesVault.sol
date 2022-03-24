@@ -158,7 +158,7 @@ contract SharesVault is ERC20, Ownable, ReentrancyGuard {
             uint256 userDeposits = balanceOf(msg.sender);
             if (userDeposits > 0) {
                 // Current deposit amount + incoming should be under the current cap
-                uint256 wouldBeTotalDeposits = userDeposits.add(_amountIn);
+                uint256 wouldBeTotalDeposits = userDeposits.add(_amountIn).div(10e18);
                 require(
                     wouldBeTotalDeposits < userDepositLimit,
                     "Exceeds user deposit limit"
@@ -172,7 +172,7 @@ contract SharesVault is ERC20, Ownable, ReentrancyGuard {
             } else {
                 // If new depositor then just check the deposit does not exceed vaults current total cap
                 require(
-                    balance().add(_amountIn) < totalDepositLimit,
+                    balance().add(_amountIn).div(10e18) < totalDepositLimit,
                     "Exceeds current total deposit limit"
                 );
             }
