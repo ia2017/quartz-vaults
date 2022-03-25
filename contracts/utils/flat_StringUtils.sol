@@ -1,7 +1,6 @@
-
-/** 
+/**
  *  SourceUnit: /Users/joebrown/@briz-crypto/@quartz.defi/vaults/contracts/utils/StringUtils.sol
-*/
+ */
 
 ////// SPDX-License-Identifier-FLATTEN-SUPPRESS-WARNING: MIT
 
@@ -16,4 +15,3 @@ library StringUtils {
         return string(abi.encodePacked(a, b));
     }
 }
-

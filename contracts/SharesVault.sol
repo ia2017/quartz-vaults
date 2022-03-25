@@ -41,6 +41,8 @@ contract SharesVault is ERC20, Ownable, ReentrancyGuard {
     // The minimum time it has to pass before a strat candidate can be approved.
     uint256 public immutable approvalDelay;
 
+    mapping(address => uint256) public userLpDeposits;
+
     event NewStratCandidate(address implementation);
     event UpgradeStrat(address implementation);
 
@@ -63,7 +65,7 @@ contract SharesVault is ERC20, Ownable, ReentrancyGuard {
         uint256 _userDepositLimit
     ) public ERC20(_name, _symbol) {
         // If using this version of a vault then these values should be provided
-        require(_totalDepositLimit > 0, "!_dailyDepositLimit");
+        require(_totalDepositLimit > 0, "!_totalDepositLimit");
         require(_userDepositLimit > 0, "!_userDepositLimit");
 
         strategy = _strategy;
@@ -138,7 +140,8 @@ contract SharesVault is ERC20, Ownable, ReentrancyGuard {
         // Additional check for deflationary tokens
         _amount = _after.sub(totalDepositBalance);
 
-        // Mint the amount vault tokens to the caller according to current deposits in vault
+        // Mint the amount vault tokens to the caller based on total vault token supply
+        // and total balance of `want` 
         uint256 shares = 0;
         if (totalSupply() == 0) {
             shares = _amount;
@@ -149,33 +152,46 @@ contract SharesVault is ERC20, Ownable, ReentrancyGuard {
         _mint(msg.sender, shares);
     }
 
-    /**
-     * @dev If `depositLimitsEnabled`,
-     * this function will run the required checks against the input deposit amount.
-     */
+    // function _checkDepositLimits(uint256 _amountIn) private view {
+    //     if (depositLimitsEnabled) {
+    //         uint256 userDeposits = balanceOf(msg.sender);
+    //         if (userDeposits > 0) {
+    //             // Current deposit amount + incoming should be under the current cap
+    //             uint256 wouldBeTotalDeposits = userDeposits.add(_amountIn);
+    //             require(
+    //                 wouldBeTotalDeposits < userDepositLimit,
+    //                 "Exceeds user deposit limit"
+    //             );
+
+    //             // Increase of user balance should not exceed current total cap limit for vault
+    //             require(
+    //                 balance().add(wouldBeTotalDeposits) < totalDepositLimit,
+    //                 "Exceeds current total deposit limit"
+    //             );
+    //         } else {
+    //             // If new depositor then just check the deposit does not exceed vaults current total cap
+    //             require(
+    //                 balance().add(_amountIn) < totalDepositLimit,
+    //                 "Exceeds current total deposit limit"
+    //             );
+    //         }
+    //     }
+    // }
+
+
     function _checkDepositLimits(uint256 _amountIn) private view {
         if (depositLimitsEnabled) {
-            uint256 userDeposits = balanceOf(msg.sender);
-            if (userDeposits > 0) {
-                // Current deposit amount + incoming should be under the current cap
-                uint256 wouldBeTotalDeposits = userDeposits.add(_amountIn).div(10e18);
-                require(
-                    wouldBeTotalDeposits < userDepositLimit,
-                    "Exceeds user deposit limit"
-                );
+            uint256 userDeposits = userLpDeposits[msg.sender];
 
-                // Increase of user balance should not exceed current total cap limit for vault
-                require(
-                    balance().add(wouldBeTotalDeposits) < totalDepositLimit,
-                    "Exceeds current total deposit limit"
-                );
-            } else {
-                // If new depositor then just check the deposit does not exceed vaults current total cap
-                require(
-                    balance().add(_amountIn).div(10e18) < totalDepositLimit,
-                    "Exceeds current total deposit limit"
-                );
-            }
+            require(
+                userDeposits.add(_amountIn) <= userDepositLimit,
+                "Exceeds user deposit limit"
+            );
+
+            require(
+                balance().add(_amountIn) <= totalDepositLimit,
+                "Exceeds current total deposit limit"
+            );
         }
     }
 
@@ -209,15 +225,15 @@ contract SharesVault is ERC20, Ownable, ReentrancyGuard {
 
         uint256 currentBalance = want().balanceOf(address(this));
 
-        // Then check strat for funds to pull into vault
+        // If the vault is not holding the funds amount,
+        // then withdraw the difference from the strategy as needed.
         if (currentBalance < requestedWithdrawAmount) {
             uint256 withdrawAmount = requestedWithdrawAmount.sub(
                 currentBalance
             );
-            strategy.withdraw(withdrawAmount);
 
-            // Withdraw fees can be taken in strategies
-            // So adjust total returned to caller as needed
+            strategy.withdraw(withdrawAmount);
+    
             uint256 balanceAfterStratWithdraw = want().balanceOf(address(this));
             uint256 vaultStratBalanceDiff = balanceAfterStratWithdraw.sub(
                 currentBalance
@@ -229,6 +245,12 @@ contract SharesVault is ERC20, Ownable, ReentrancyGuard {
                 );
             }
         }
+       
+        uint256 reducedAmount = userLpDeposits[msg.sender].sub(
+            requestedWithdrawAmount
+        );
+         // User can have larger number of LP than when deposited now
+        userLpDeposits[msg.sender] = reducedAmount < 0 ? 0 : reducedAmount;
 
         want().safeTransfer(msg.sender, requestedWithdrawAmount);
     }
