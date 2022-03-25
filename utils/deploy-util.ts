@@ -1,6 +1,5 @@
 import { BigNumberish } from "ethers";
 import { ethers } from "hardhat";
-import { QuartzVault } from "../typechain";
 import { predictAddresses } from "./predictAddresses";
 
 export interface VaultDeployConfig {
@@ -26,7 +25,15 @@ export interface StratCommonDeployConfig {
   _outputToLp1Route: string[];
 }
 
-export interface StratShareLpDeployConfig {
+export interface StratProtocolBase {
+  _protocolLp0Route: string[];
+  _protocolLp1Route: string[];
+  _protocolPairAddress: string;
+  _burnTokenAddress: string;
+  _nativeToBuybackRoute: string[];
+}
+
+export interface StratShareLpDeployConfig extends StratProtocolBase {
   want: string;
   poolId: number;
   chefAddress: string;
@@ -38,11 +45,6 @@ export interface StratShareLpDeployConfig {
   _outputToNativeRoute: string[];
   _outputToLp0Route: string[];
   _outputToLp1Route: string[];
-  _protocolLp0Route: string[];
-  _protocolLp1Route: string[];
-  _protocolPairAddress: string;
-  _burnTokenAddress: string;
-  _nativeToBuybackRoute: string[];
 }
 
 export interface StratSingleStakeConfig {
@@ -58,6 +60,20 @@ export interface StratSingleStakeConfig {
   _outputToWant: string[];
 }
 
+export interface StratProtocolSingleStakeConfig extends StratProtocolBase {
+  want: string;
+  poolId: number;
+  chefAddress: string;
+  vault: string;
+  router: string;
+  keeper: string;
+  strategist: string;
+  protocolFeeRecipient: string;
+  _outputToNativeRoute: string[];
+  _outputToWant: string[];
+}
+
+
 export const deployCommonVault = async (
   ownerAddress: string,
   strategyAddress: string,
@@ -66,7 +82,7 @@ export const deployCommonVault = async (
 ) => {
   const predictedAddresses = await predictAddresses(ownerAddress);
 
-  const Vault = await ethers.getContractFactory("QuartzVault");
+  const Vault = await ethers.getContractFactory("Vault");
   const vaultArgs = {
     strategyAddress,
     tokenName: `AMES ${nameToken0}-${nameToken1} Vault LP`,
@@ -80,7 +96,7 @@ export const deployCommonVault = async (
     vaultArgs.approvalDelay
   );
   await vault.deployed();
-  console.log("QuartzVault deployed to:", vault.address);
+  console.log("Vault deployed to:", vault.address);
   console.log(
     `predicted: ${predictedAddresses.vault} - actual: ${vault.address}`
   );
@@ -130,7 +146,7 @@ export const deploySingleStakeVault = async (
 ) => {
   const predictedAddresses = await predictAddresses(ownerAddress);
 
-  const Vault = await ethers.getContractFactory("QuartzVault");
+  const Vault = await ethers.getContractFactory("Vault");
   const vaultArgs = {
     strategyAddress,
     tokenName: `AMES ${tokenName} Vault LP`,
@@ -217,6 +233,47 @@ export const deployStrategySingleStake = async (
   return strategy;
 };
 
+export const deployProtocolStrategySingleStake = async (
+  stratArgs: StratProtocolSingleStakeConfig
+) => {
+  const Strategy = await ethers.getContractFactory("StrategyProtocolSingleStake");
+  // address _want,
+  // uint256 _poolId,
+  // address _chef,
+  // address _vault,
+  // address _unirouter,
+  // address _keeper,
+  // address _strategist,
+  // address _protocolFeeRecipient,
+  // address[] memory _outputToNativeRoute,
+  // address[] memory _outputToWantRoute
+   // address[] memory _protocolLp0Route,
+  // address[] memory _protocolLp1Route,
+  // address _protocolPairAddress,
+  // address _burnTokenAddress,
+  // address[] _nativeToBuybackRoute
+  const strategy = await Strategy.deploy(
+    stratArgs.want,
+    stratArgs.poolId,
+    stratArgs.chefAddress,
+    stratArgs.vault,
+    stratArgs.router,
+    stratArgs.keeper,
+    stratArgs.strategist,
+    stratArgs.protocolFeeRecipient,
+    stratArgs._outputToNativeRoute,
+    stratArgs._outputToWant,
+    stratArgs._protocolLp0Route,
+    stratArgs._protocolLp1Route,
+    stratArgs._protocolPairAddress,
+    stratArgs._burnTokenAddress,
+    stratArgs._nativeToBuybackRoute
+  );
+
+  await strategy.deployed();
+  console.log("StrategyProtocolSingleStake deployed to:", strategy.address);
+  return strategy;
+};
 
 
 export const deployStrategySharesLP = async (
@@ -237,7 +294,8 @@ export const deployStrategySharesLP = async (
   // address[] memory _protocolLp0Route,
   // address[] memory _protocolLp1Route,
   // address _protocolPairAddress,
-  // uint256 _protocolLpPoolId
+  // address _burnTokenAddress,
+  // address[] _nativeToBuybackRoute
   const strategy = await Strategy.deploy(
     stratArgs.want,
     stratArgs.poolId,

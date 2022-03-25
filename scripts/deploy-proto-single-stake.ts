@@ -1,24 +1,30 @@
 import { predictAddresses } from "../utils/predictAddresses";
-import { deployCommonVault, deployStrategySharesLP } from "../utils/deploy-util";
-import { STRAT_PROTO_AMETHYST_UST_BSC } from "./strats/bsc/strat-proto-ames-ust";
+import {
+    deployProtocolStrategySingleStake,
+  deploySingleStakeVault,
+} from "../utils/deploy-util";
+import { STRAT_PROTOCOL_SINGLE_STAKE_AMETHYST_BSC } from "./strats/bsc/strat-proto-single-ames";
 
 async function main() {
-  const currentStrat = STRAT_PROTO_AMETHYST_UST_BSC;
+  const currentStrategist = '0x570108E54d11348BD3734FF73dc55eC52c28d3EF'
 
-  const predictedAddresses = await predictAddresses('0x570108E54d11348BD3734FF73dc55eC52c28d3EF');
+  const currentStrat = STRAT_PROTOCOL_SINGLE_STAKE_AMETHYST_BSC;
 
-  const vault = await deployCommonVault(
-    '0x570108E54d11348BD3734FF73dc55eC52c28d3EF',
+  const predictedAddresses = await predictAddresses(currentStrategist);
+
+  const vault = await deploySingleStakeVault(
+    currentStrategist,
     predictedAddresses.strategy,
-    currentStrat.nameToken0,
-    currentStrat.nameToken1
+    currentStrat.tokenName
   );
 
   currentStrat.constructorArgs.vault = vault.address;
 
-  // Update rewards check function name to match our reward pool/chef name
-  const strategy = await deployStrategySharesLP(currentStrat.constructorArgs);
+  const strategy = await deployProtocolStrategySingleStake(
+    currentStrat.constructorArgs
+  );
 
+  // Update rewards check function name to match our reward pool/chef name
   const tx = await strategy.setPendingRewardsFunctionName("pendingShare");
   await tx.wait(1);
 
