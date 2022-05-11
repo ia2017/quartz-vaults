@@ -21,8 +21,8 @@ const _outputToLp0Route: string[] = [TOKENS.ASHARE.BSC, TOKENS.UST.BSC];
 // Token1: ASHARE
 const _outputToLp1Route: string[] = [TOKENS.ASHARE.BSC,TOKENS.UST.BSC, TOKENS.AMETHYST.BSC];
 
-export const nameToken0 = "UST";
-export const nameToken1 = "AMETHYST";
+export const nameToken0 = "UST"; // Change this
+export const nameToken1 = "AMETHYST"; // Change this
 
 export const constructorArgs: StratShareLpDeployConfig = {
   want: PAIR_AMETHYST_UST_ADDRESS,

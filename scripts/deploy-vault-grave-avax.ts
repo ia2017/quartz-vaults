@@ -1,14 +1,14 @@
 import { predictAddresses } from "../utils/predictAddresses";
 import { deployCommonVault, deployStrategySharesLP } from "../utils/deploy-util";
-import { STRAT_PROTO_AMETHYST_UST_BSC } from "./strats/bsc/strat-proto-ames-ust";
+import { STRAT_PROTO_GRAVE_AVAX } from "./strats/avax/strat-proto-grave-avax";
 
 async function main() {
-  const currentStrat = STRAT_PROTO_AMETHYST_UST_BSC;
+  const currentStrat = STRAT_PROTO_GRAVE_AVAX;
 
-  const predictedAddresses = await predictAddresses('0x570108E54d11348BD3734FF73dc55eC52c28d3EF'); // who's address?
+  const predictedAddresses = await predictAddresses('0x2b42f9b0ab98ACEa2D4ba7fa2Daf68D3a7dA7971'); // strategist address?
 
   const vault = await deployCommonVault(
-    '0x570108E54d11348BD3734FF73dc55eC52c28d3EF',
+    '0x2b42f9b0ab98ACEa2D4ba7fa2Daf68D3a7dA7971',
     predictedAddresses.strategy,
     currentStrat.nameToken0,
     currentStrat.nameToken1
@@ -44,7 +44,16 @@ main().catch((error) => {
   process.exitCode = 1;
 });
 
+// ---- BSC ----------
 // 2,011,657 gas units to deploy
 // average 6.9 gwei / unit on bsc scan
 // = 13880433.3 gwei
 // = 35.46 US dollars
+
+// ---- AVAX ----------
+// 2,011,657 gas units to deploy
+// average 130 gwei / unit on avax
+// = 261515410 gwei
+// = 668 US dollars
+
+

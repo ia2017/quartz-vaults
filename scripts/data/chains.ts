@@ -5,4 +5,7 @@ export const CHAINS = {
   HARMONY: {
     chainId: 166660000,
   },
+  AVALANCHE: {
+    chainId: 43114,
+  }
 };

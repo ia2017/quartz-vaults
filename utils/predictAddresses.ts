@@ -27,6 +27,8 @@ export const predictAddresses = async (
   let nextContractAddress = `0x${nextContractAddressLong.substring(24)}`;
   let nextContractAddressChecksum =
     web3.utils.toChecksumAddress(nextContractAddress);
+  
+    console.log(currentContractAddressChecksum);
 
   return {
     vault: currentContractAddressChecksum,
